@@ -8,5 +8,6 @@ class Exit:
 
 	def __init__(self, data):
 		self.data = {}
-		self.data["direction"] = ExitDirection(data[0]+1)
+		self.data["direction"] = ExitDirection(int(next(iter(data[0])))+1)
 		self.data["examine"] = str(data[1])
+		self.data["destination_room_id"] = str(data[2])

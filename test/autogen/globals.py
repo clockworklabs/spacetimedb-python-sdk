@@ -2,11 +2,10 @@
 # WILL NOT BE SAVED. MODIFY TABLES IN RUST INSTEAD.
 
 
-class Mobile:
+class Globals:
 	is_table_class = True
 
 	def __init__(self, data):
 		self.data = {}
-		self.data["spawnable_entity_id"] = int(data[0])
-		self.data["name"] = str(data[1])
-		self.data["description"] = str(data[2])
+		self.data["id"] = int(data[0])
+		self.data["spawnable_entity_id_counter"] = int(data[1])

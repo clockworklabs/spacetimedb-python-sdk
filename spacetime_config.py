@@ -18,6 +18,10 @@ else:
         "database": "test",
     }
 
+def set_config(config_in):
+    for key, value in config_in:
+        config["main"][key] = value
+    save()
 
 def get_string(key):
     if key in config["main"]:

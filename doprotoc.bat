@@ -1,0 +1,1 @@
+for %%i in (..\SpacetimeDB\crates\core\protobuf\*.proto) do ..\protoc-22.4-win64\bin\protoc.exe -I ..\SpacetimeDB\crates\core\protobuf --python_out=.\proto --experimental_allow_proto3_optional %%i

@@ -20,14 +20,16 @@ class TableCache:
         if key in self.entries:
             del self.entries[key]
 
+    def get_entry(self, key):
+        if key in self.entries:
+            return self.entries[key]
+
 
 class ClientCache:
     _instance = None
 
     @classmethod
     def get_instance(cls):
-        if ClientCache._instance is None:
-            ClientCache()
         return ClientCache._instance
 
     @classmethod
@@ -35,6 +37,8 @@ class ClientCache:
         return ClientCache.get_instance().tables[table_name].entries
 
     def __init__(self, autogen_package):
+        ClientCache._instance = self
+        
         self.tables = {}
 
         for importer, module_name, is_package in pkgutil.iter_modules(autogen_package.__path__):
@@ -81,4 +85,8 @@ class ClientCache:
         self.tables[table_name].delete_entry(key, value)
 
     def get_entry(self, table_name, key):
-        return self.tables[table_name].entries[key]
+        if not table_name in self.tables:
+            print("Error, table not found.")
+            return
+        
+        return self.tables[table_name].get_entry(key)

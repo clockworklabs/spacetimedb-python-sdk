@@ -2,14 +2,14 @@
 # WILL NOT BE SAVED. MODIFY TABLES IN RUST INSTEAD.
 
 from .exit import Exit
-from .mobile import Mobile
 
 class Room:
 	is_table_class = True
 
 	def __init__(self, data):
 		self.data = {}
-		self.data["name"] = str(data[0])
-		self.data["description"] = str(data[1])
-		self.data["exits"] = [Exit(item) for item in data[2]]
-		self.data["mob"] = Mobile(data[3]['0']) if '0' in data[3] else None
+		self.data["room_id"] = str(data[0])
+		self.data["name"] = str(data[1])
+		self.data["description"] = str(data[2])
+		self.data["exits"] = [Exit(item) for item in data[3]]
+		self.data["spawnable_entities"] = [int(item) for item in data[4]]

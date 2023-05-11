@@ -62,7 +62,7 @@ class WebSocketClient:
         if self._on_connect:
             self._on_connect()
 
-        print("Connected to WebSocket server")
+        #print("Connected to WebSocket server")
         # message = {"type": "hello", "data": "Hello, server!"}
         # self.ws.send(json.dumps(message))
 
@@ -84,4 +84,4 @@ class WebSocketClient:
     def on_close(self, ws, status_code, close_msg):
         if self._on_close:
             self._on_close(close_msg)
-        print("Disconnected from WebSocket server")
+        #print("Disconnected from WebSocket server")
