@@ -23,21 +23,23 @@ class TableCache:
     def get_entry(self, key):
         if key in self.entries:
             return self.entries[key]
+        
+    def values(self):
+        return self.entries.values()
 
 
 class ClientCache:
-    _instance = None
+    instance = None
 
     @classmethod
-    def get_instance(cls):
-        return ClientCache._instance
-
+    def get_table_cache(cls, table_name):
+        return cls.instance.tables[table_name]    
+        
     @classmethod
-    def get_table_dict(cls, table_name):
-        return ClientCache.get_instance().tables[table_name].entries
+    def init(cls, autogen_package):
+        cls.instance = ClientCache(autogen_package)
 
     def __init__(self, autogen_package):
-        ClientCache._instance = self
         
         self.tables = {}
 

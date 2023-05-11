@@ -11,3 +11,6 @@ class Exit:
 		self.data["direction"] = ExitDirection(int(next(iter(data[0])))+1)
 		self.data["examine"] = str(data[1])
 		self.data["destination_room_id"] = str(data[2])
+
+	def __getattr__(self, name):
+		return self.data.get(name)

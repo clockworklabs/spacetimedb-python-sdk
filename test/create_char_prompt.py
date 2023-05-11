@@ -10,11 +10,12 @@ class CreateCharPrompt(cmd.Cmd):
     prompt = 'What do you wish to be called\n>> '
     create_char_state = CreateCharState.NAME
 
-    def __init__(self):
+    def __init__(self,c):
         super().__init__()
         self.name = None
         self.description = None
         self.success = False
+        self.c = c
 
     def update_prompt(self):
         if self.create_char_state == CreateCharState.NAME:

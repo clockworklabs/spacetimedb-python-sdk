@@ -37,13 +37,17 @@ class TransactionUpdateMessage(ClientApiMessage):
 
 
 class NetworkManager:
+    instance = None
+
+    @classmethod
+    def init(cls, autogen_package, config=None, on_connect=None, on_disconnect=None, on_error=None):
+        cls.instance = NetworkManager(autogen_package, config, on_connect, on_disconnect, on_error)
+    
     # config is an optional dictionary that lets you override settings
     #    host - host to connect to (default: localhost:3000)
     #    database - database to use (default: test)
     #    auth - spacetimedb auth token (default: will generate or use previous)
-    def __init__(
-        self, autogen_package, config=None, on_connect=None, on_disconnect=None, on_error=None
-    ):
+    def __init__(self, autogen_package, config, on_connect, on_disconnect, on_error):
         self._on_connect = on_connect
         self._on_disconnect = on_disconnect
         self._on_error = on_error
@@ -53,7 +57,9 @@ class NetworkManager:
         self._on_transaction_callback = []
         self._on_event = []
 
-        self.client_cache = ClientCache(autogen_package)
+        self.identity = None
+
+        ClientCache.init(autogen_package)
         self.message_queue = queue.Queue()
 
         self.processed_message_queue = queue.Queue()
@@ -123,6 +129,7 @@ class NetworkManager:
         message = json.loads(data)
         if "IdentityToken" in message:
             # is this safe to do in the message thread?
+            self.identity = bytes.fromhex(message["IdentityToken"]["identity"])
             spacetime_config.set_string("auth", message["IdentityToken"]["token"])
         elif "SubscriptionUpdate" in message or "TransactionUpdate" in message:
             clientapi_message = None
@@ -148,7 +155,7 @@ class NetworkManager:
                 for table_row_op in table_update["table_row_operations"]:
                     row_op = table_row_op["op"]
                     if row_op == "insert":
-                        decoded_value = self.client_cache.decode(
+                        decoded_value = ClientCache.instance.decode(
                             table_name, table_row_op["row"]
                         )
                         clientapi_message.append_event(
@@ -173,16 +180,16 @@ class NetworkManager:
             # apply all the event state before calling callbacks
             for db_event in next_message.events:
                 # get the old value for sending callbacks
-                db_event.old_value = self.client_cache.get_entry(
+                db_event.old_value = ClientCache.instance.get_entry(
                     db_event.table_name, db_event.row_pk
                 )
 
                 if db_event.row_op == "insert":
-                    self.client_cache.set_entry_decoded(
+                    ClientCache.instance.set_entry_decoded(
                         db_event.table_name, db_event.row_pk, db_event.decoded_value
                     )
                 elif db_event.row_op == "delete":
-                    self.client_cache.delete_entry(db_event.table_name, db_event.row_pk)
+                    ClientCache.instance.delete_entry(db_event.table_name, db_event.row_pk)
 
             for db_event in next_message.events:
                 # call row update callback

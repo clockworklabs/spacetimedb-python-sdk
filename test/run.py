@@ -6,7 +6,6 @@ import signal
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Add the parent directory to the system path
-print(parent_dir)
 sys.path.append(parent_dir)
 
 from game_controller import GameController

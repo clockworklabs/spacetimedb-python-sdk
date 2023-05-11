@@ -32,6 +32,8 @@ class WebSocketClient:
             headers = {
                 "Authorization": f"Basic {base64_str}",
             }
+        else:
+            headers = None
 
         self.ws = websocket.WebSocketApp(url,
                                          on_open=self.on_open,

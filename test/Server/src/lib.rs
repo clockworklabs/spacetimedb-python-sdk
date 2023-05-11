@@ -16,12 +16,13 @@ pub fn initialize() {
         room_id: "start".into(),
 
         name: "Clockwork Labs Lobby".into(),
-        description: "This is a room.".into(),
-        exits: vec![Exit {
-            direction: ExitDirection::NE,
-            examine: "An exit".into(),
-            destination_room_id: "start".into(),
-        }],
+        description: "    The main lobby of this Silicon Valley startup is an enchanting amalgamation of futuristic eccentricity and vibrant energy. As one steps into the space, they are greeted by a symphony of neon lights dancing across the walls, juxtaposed with sleek, minimalist furniture adorned with plush, oversized cushions in vivid hues.\n    The atmosphere buzzes with the echoes of passionate conversations, the whirring of espresso machines, and the occasional ping-pong ball ricocheting in the air, epitomizing the dynamic spirit of innovation that permeates the company's culture.".into(),
+        exits: Vec::new(),
+        // exits: vec![Exit {
+        //     direction: ExitDirection::NE,
+        //     examine: "An exit".into(),
+        //     destination_room_id: "start".into(),
+        // }],
         spawnable_entities: Vec::new(),
     });
 }
