@@ -3,6 +3,7 @@ from PyQt6.QtGui import QTextCursor, QTextCharFormat, QColor, QIcon
 
 class ConsoleWindow(QMainWindow):
     instance = None
+    last_print_was_prompt = False
 
     def __init__(self, game_controller):
         super().__init__()
@@ -34,10 +35,10 @@ class ConsoleWindow(QMainWindow):
     def process_command(self):
         command = self.command_line_edit.text()
 
-        if self.game_controller.prompt:
-            self.game_controller.prompt.command(command)
-        
         self.print(command + "\n")
+        
+        if self.game_controller.prompt:
+            self.game_controller.prompt.command(command)        
 
         self.command_line_edit.clear()
 
@@ -47,4 +48,14 @@ class ConsoleWindow(QMainWindow):
 
         cursor = self.output_text_edit.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
+
+        if self.last_print_was_prompt:
+            text = '\n\n' + text
+
         cursor.insertText(text, char_format)
+
+        self.last_print_was_prompt = False
+
+    def prompt(self):
+        self.print("> ")
+        self.last_print_was_prompt = True

@@ -5,3 +5,12 @@ from network_manager import NetworkManager
 
 def create_player(name, description):
 	NetworkManager.instance.reducer_call("create_player", name, description)
+
+class ReducerArgs:
+	def __init__(self, data):
+		self.data = {}
+		self.data["name"] = str(data[0])
+		self.data["description"] = str(data[1])
+
+	def __getattr__(self, name):
+		return self.data.get(name)

@@ -2,31 +2,31 @@ import cmd
 
 from helpers import *
 from console_window import ConsoleWindow
+from autogen import say_reducer
 
 class GamePrompt(cmd.Cmd):
-    prompt = '>> '    
+    result = None
 
-    def __init__(self, c):
+    def __init__(self):
         super().__init__()
 
-        self.c = c        
-        self.update_prompt()        
+        self.room()        
 
     def room(self):
         room = get_local_player_room()
         
-        room_name = room.name
-        ConsoleWindow.instance.print(room_name,"blue")
+        ConsoleWindow.instance.print(room.name + "\n","blue")
+        ConsoleWindow.instance.print(room.description + "\n")
 
         if len(room.exits) > 0:
-            exits_names = []        
+            exits_strs = []        
             for exit in room.exits:
-                exits_names.append((str(exit.direction)).lower())
-            exits_str = ', '.join(exits_names)            
+                exits_strs.append((str(exit.direction.name)).lower())
+            exits_str = ', '.join(exits_strs)            
         else:
             exits_str = "NONE"
 
-        exits_str = f"[EXITS: {exits_str}]"
+        ConsoleWindow.instance.print(f"[EXITS: {exits_str}]\n", "yellow")
 
         spawnables_list = []
         for spawnable in Location.filter_by_room_id(room.room_id):
@@ -37,34 +37,38 @@ class GamePrompt(cmd.Cmd):
         if(len(spawnables_list) > 0):
             spawnables_str = spawnables_str + "\n"
 
-        prompt = '>> '
-
-        ConsoleWindow.instance.print(f'{room_name}\n{room.description}\n{exits_str}\n{spawnables_str}{prompt}')
-
-    def command(self):
+        ConsoleWindow.instance.print(spawnables_str)
+        ConsoleWindow.instance.print(f"\n")
         
-
-    def do_quit(self, arg):
-        """Quit the game"""
-        return True
-
-    def do_look(self, arg):
-        """Look around the room"""
-        self.update_prompt()
-        pass
+        ConsoleWindow.instance.prompt()
 
     def do_go(self, direction):
         """Go in a direction"""
         room = get_local_player_room()
         if direction not in room.exits:
-            print("You can't go that way!")
+            ConsoleWindow.instance.print(f"You can't go that way!\n")
+            ConsoleWindow.instance.prompt()
+
             return
         self.current_room = room['exits'][direction]
         self.update_prompt()
 
-    def default(self, line: str) -> None:
-        prompt = self.c.red('>> ')
-        self.prompt = "Huh?!?\n" + prompt
+    def command(self, line: str):
+        room = get_local_player_room()
+        exits_strs = get_exits_strs(room)
 
-    def postcmd(self, stop: bool, line: str) -> bool:
-        return stop
+        if line.lower() == "quit" or line.lower() == "q":
+            self.result = "quit"
+            return True
+        elif line.lower() == "look" or line.lower() == "l":
+            self.room()        
+        elif line.lower().startswith("say ") or line.lower().startswith("'"):
+            prefix = "say " if line.lower().startswith("say ") else "'"
+            message = line[len(prefix):]
+            say_reducer.say(get_local_player_entity_id(), message)
+        elif line.lower() in exits_strs:
+            index = exits_strs.index(line.lower())
+            self.do_go(room.exits[index])
+        else:            
+            ConsoleWindow.instance.print("Huh?!?\n")
+            ConsoleWindow.instance.prompt()

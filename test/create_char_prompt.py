@@ -18,9 +18,10 @@ class CreateCharPrompt():
         self.success = False
         self.result = None
 
-        ConsoleWindow.instance.print('What do you wish to be called?\n>> ')   
+        ConsoleWindow.instance.print('What do you wish to be called?\n')   
+        ConsoleWindow.instance.prompt()
 
-    def command(self, line: str) -> None:
+    def command(self, line: str):
         if line.lower() == "quit":
             self.result = "quit"
             return True
@@ -28,16 +29,19 @@ class CreateCharPrompt():
             if self.create_char_state == CreateCharState.NAME:
                 self.name = line
                 self.create_char_state = CreateCharState.DESCRIPTION
-                ConsoleWindow.instance.print('Provide a brief description.\n>> ')
+                ConsoleWindow.instance.print('Provide a brief description.\n')
+                ConsoleWindow.instance.prompt()
             elif self.create_char_state == CreateCharState.DESCRIPTION:
                 self.description = line
                 self.create_char_state = CreateCharState.CONFIRM
-                ConsoleWindow.instance.print('Name: {}\nDescription: {}\n\nDo you wish to create this character?\n>> '.format(self.name,self.description))            
+                ConsoleWindow.instance.print('Name: {}\nDescription: {}\n\nDo you wish to create this character? (y/n)\n'.format(self.name,self.description))            
+                ConsoleWindow.instance.prompt()
             elif self.create_char_state == CreateCharState.CONFIRM:
                 if(line.lower() == 'y' or line.lower() == 'yes'):
                     self.result = "success"
                     return True
                 else:
                     self.create_char_state = CreateCharState.NAME
-                    ConsoleWindow.instance.print('What do you wish to be called?\n>> ')
+                    ConsoleWindow.instance.print('What do you wish to be called?\n')
+                    ConsoleWindow.instance.prompt()
                 

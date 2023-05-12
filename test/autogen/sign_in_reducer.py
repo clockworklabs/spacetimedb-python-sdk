@@ -3,14 +3,13 @@
 
 from network_manager import NetworkManager
 
-def say(source_spawnable_entity_id, chat_text):
-	NetworkManager.instance.reducer_call("say", source_spawnable_entity_id, chat_text)
+def sign_in(player_spawnable_entity_id):
+	NetworkManager.instance.reducer_call("sign_in", player_spawnable_entity_id)
 
 class ReducerArgs:
 	def __init__(self, data):
 		self.data = {}
-		self.data["source_spawnable_entity_id"] = int(data[0])
-		self.data["chat_text"] = str(data[1])
+		self.data["player_spawnable_entity_id"] = int(data[0])
 
 	def __getattr__(self, name):
 		return self.data.get(name)

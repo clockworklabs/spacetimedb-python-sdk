@@ -11,8 +11,12 @@ class RoomChat:
 		return ClientCache.instance.get_table_cache("RoomChat").values()
 
 	@classmethod
+	def filter_by_chat_entity_id(cls, chat_entity_id):
+		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.chat_entity_id == chat_entity_id]), None)
+
+	@classmethod
 	def filter_by_room_id(cls, room_id):
-		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.room_id == room_id]), None)
+		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.room_id == room_id]
 
 	@classmethod
 	def filter_by_source_spawnable_entity_id(cls, source_spawnable_entity_id):
@@ -22,11 +26,17 @@ class RoomChat:
 	def filter_by_chat_text(cls, chat_text):
 		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.chat_text == chat_text]
 
+	@classmethod
+	def filter_by_timestamp(cls, timestamp):
+		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.timestamp == timestamp]
+
 	def __init__(self, data):
 		self.data = {}
-		self.data["room_id"] = str(data[0])
-		self.data["source_spawnable_entity_id"] = int(data[1])
-		self.data["chat_text"] = str(data[2])
+		self.data["chat_entity_id"] = int(data[0])
+		self.data["room_id"] = str(data[1])
+		self.data["source_spawnable_entity_id"] = int(data[2])
+		self.data["chat_text"] = str(data[3])
+		self.data["timestamp"] = int(data[4])
 
 	def __getattr__(self, name):
 		return self.data.get(name)

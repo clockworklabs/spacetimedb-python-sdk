@@ -18,10 +18,15 @@ class Location:
 	def filter_by_room_id(cls, room_id):
 		return [column_value for column_value in ClientCache.instance.get_table_cache("Location").values() if column_value.room_id == room_id]
 
+	@classmethod
+	def filter_by_last_room_id(cls, last_room_id):
+		return [column_value for column_value in ClientCache.instance.get_table_cache("Location").values() if column_value.last_room_id == last_room_id]
+
 	def __init__(self, data):
 		self.data = {}
 		self.data["spawnable_entity_id"] = int(data[0])
 		self.data["room_id"] = str(data[1]['0']) if '0' in data[1] else None
+		self.data["last_room_id"] = str(data[2]['0']) if '0' in data[2] else None
 
 	def __getattr__(self, name):
 		return self.data.get(name)

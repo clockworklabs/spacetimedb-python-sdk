@@ -82,7 +82,7 @@ class NetworkManager:
 
         self._row_update_callbacks[table_name].append(callback)
 
-    # callback args: caller_identity, status, args
+    # callback args: caller_identity, status (committed, failed), args
     def register_reducer(self, reducer_name, callback):
         if reducer_name not in self._reducer_callbacks:
             self._reducer_callbacks[reducer_name] = []
@@ -105,7 +105,7 @@ class NetworkManager:
 
     def reducer_call(self, reducer, *args):
         if not self.wsc.is_connected:
-            print("Not connected")
+            print("[reducer_call] Not connected")
 
         message = {
             "fn": reducer,
@@ -144,7 +144,7 @@ class NetworkManager:
                     spacetime_message["event"]["caller_identity"],
                     spacetime_message["event"]["status"],
                     spacetime_message["event"]["function_call"]["reducer"],
-                    spacetime_message["event"]["function_call"]["args"],
+                    json.loads(spacetime_message["event"]["function_call"]["args"]),
                 )
                 table_updates = message["TransactionUpdate"]["subscription_update"][
                     "table_updates"
@@ -176,7 +176,7 @@ class NetworkManager:
     def update(self):
         while not self.message_queue.empty():
             next_message = self.message_queue.get()
-
+            
             # apply all the event state before calling callbacks
             for db_event in next_message.events:
                 # get the old value for sending callbacks
@@ -213,10 +213,11 @@ class NetworkManager:
 
                 # call reducer callback
                 if next_message.reducer in self._reducer_callbacks:
+                    args_class = ClientCache.instance.reducer_cache[next_message.reducer]
                     for reducer_callback in self._reducer_callbacks[next_message.reducer]:
                         reducer_callback(
-                            next_message.caller_identity,
+                            bytes.fromhex(next_message.caller_identity),
                             next_message.status,
-                            next_message.args
+                            args_class(next_message.args)
                          )
                 

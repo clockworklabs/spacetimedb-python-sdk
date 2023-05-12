@@ -24,12 +24,14 @@ pub enum ExitDirection {
 }
 
 #[spacetimedb(table)]
+#[derive(Clone)]
 pub struct Location {
     #[unique]
     #[autoinc]
     pub spawnable_entity_id: u64,
 
     pub room_id: Option<String>,
+    pub last_room_id: Option<String>,
 }
 
 #[spacetimedb(table)]
@@ -63,10 +65,13 @@ pub struct Room {
 #[spacetimedb(table)]
 pub struct RoomChat {
     #[unique]
-    pub room_id: String,
+    #[autoinc]
+    pub chat_entity_id: u64,
 
+    pub room_id: String,
     pub source_spawnable_entity_id: u64,
     pub chat_text: String,
+    pub timestamp: u64,
 }
 
 #[derive(SpacetimeType)]
