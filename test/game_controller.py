@@ -57,7 +57,7 @@ class GameController:
                     create_player(self.prompt.name, self.prompt.description)
                     self.game_state = GameState.WAIT_FOR_PLAYER
                 else:
-                    return True
+                    self.should_exit = True
         elif self.game_state == GameState.WAIT_FOR_PLAYER:
             player = Player.filter_by_identity(self.local_identity)
             if player:
@@ -66,7 +66,7 @@ class GameController:
                 self.game_state = GameState.GAME
         elif self.game_state == GameState.GAME:
             if self.prompt.result == "quit":
-                return True
+                self.should_exit = True
         
 
     def on_transaction(self):
@@ -82,6 +82,5 @@ class GameController:
              "SELECT * FROM Room",
              "SELECT * FROM RoomChat"])
 
-    def exit(self):
-        self.should_exit = True
+    def exit(self):        
         NetworkManager.instance.close()

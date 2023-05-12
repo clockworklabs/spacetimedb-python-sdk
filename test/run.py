@@ -35,9 +35,12 @@ if __name__ == "__main__":
     window.show()
     window.command_line_edit.setFocus()    
     
-    should_exit = False
-    while not should_exit:
+    while not game_controller.should_exit:
         app.processEvents()
-        should_exit = game_controller.update()
+        game_controller.update()
 
-    sys.exit(app.exec())
+    game_controller.exit()
+
+    window.close()
+    app.quit()
+    sys.exit()

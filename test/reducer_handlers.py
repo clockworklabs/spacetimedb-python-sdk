@@ -60,18 +60,18 @@ def on_go(caller, status, message, args):
     
     if status == "committed":
         if NetworkManager.instance.identity == caller:
-            ConsoleWindow.instance.print("You go {}.\n\n".format(args.exit_direction))    
+            ConsoleWindow.instance.print("You go {}.\n".format(args.exit_direction))    
             _game_controller.prompt.room()
         else:
             local_room_id = get_local_player_room_id()
             source_location = Location.filter_by_spawnable_entity_id(args.source_spawnable_entity_id)
             if(source_location.last_room_id == local_room_id):
                 source_name = get_name(args.source_spawnable_entity_id)    
-                ConsoleWindow.instance.print("{} has left.\n\n".format(source_name))    
+                ConsoleWindow.instance.print("{} has left.\n".format(source_name))    
                 ConsoleWindow.instance.prompt()
             elif(source_location.room_id == local_room_id):
                 source_name = get_name(args.source_spawnable_entity_id)    
-                ConsoleWindow.instance.print("{} arrives.\n\n".format(source_name))
+                ConsoleWindow.instance.print("{} arrives.\n".format(source_name))
                 ConsoleWindow.instance.prompt()
     else:
         print(status + " " + message)

@@ -61,6 +61,7 @@ pub fn sign_in(_ctx: ReducerContext, player_spawnable_entity_id: u64) -> Result<
         .unwrap()
         .clone();
     location.room_id = location.last_room_id.clone();
+    location.last_room_id = None;
     Location::update_by_spawnable_entity_id(&player_spawnable_entity_id, location);
 
     Ok(())

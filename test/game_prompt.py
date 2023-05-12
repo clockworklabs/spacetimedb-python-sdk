@@ -16,32 +16,33 @@ class GamePrompt(cmd.Cmd):
     def room(self):
         room = get_local_player_room()
         
-        ConsoleWindow.instance.print(room.name + "\n","blue")
-        ConsoleWindow.instance.print(room.description + "\n")
+        if room:
+            ConsoleWindow.instance.print(room.name + "\n","room_name")
+            ConsoleWindow.instance.print(room.description + "\n")
 
-        if len(room.exits) > 0:
-            exits_strs = []        
-            for exit in room.exits:
-                exits_strs.append(exit.direction.lower())
-            exits_str = ', '.join(exits_strs)            
-        else:
-            exits_str = "NONE"
+            if len(room.exits) > 0:
+                exits_strs = []        
+                for exit in room.exits:
+                    exits_strs.append(exit.direction.lower())
+                exits_str = ', '.join(exits_strs)            
+            else:
+                exits_str = "NONE"
 
-        ConsoleWindow.instance.print(f"[EXITS: {exits_str}]\n", "yellow")
+            ConsoleWindow.instance.print(f"[EXITS: {exits_str}]\n", "exits")
 
-        spawnables_list = []
-        for spawnable in Location.filter_by_room_id(room.room_id):
-            if(spawnable.spawnable_entity_id != get_local_player_entity_id()):
-                mob = Mobile.filter_by_spawnable_entity_id(spawnable.spawnable_entity_id)
-                spawnables_list.append("You see {}.".format(mob.name))
-        spawnables_str = "\n".join(spawnables_list)
-        if(len(spawnables_list) > 0):
-            spawnables_str = spawnables_str + "\n"
+            spawnables_list = []
+            for spawnable in Location.filter_by_room_id(room.room_id):
+                if(spawnable.spawnable_entity_id != get_local_player_entity_id()):
+                    mob = Mobile.filter_by_spawnable_entity_id(spawnable.spawnable_entity_id)
+                    spawnables_list.append("You see {}.".format(mob.name))
+            spawnables_str = "\n".join(spawnables_list)
+            if(len(spawnables_list) > 0):
+                spawnables_str = spawnables_str + "\n"
 
-        ConsoleWindow.instance.print(spawnables_str)
-        ConsoleWindow.instance.print(f"\n")
-        
-        ConsoleWindow.instance.prompt()
+            ConsoleWindow.instance.print(spawnables_str)
+            ConsoleWindow.instance.print(f"\n")
+            
+            ConsoleWindow.instance.prompt()
 
     def do_go(self, exit):
         """Go in a direction"""
@@ -60,7 +61,6 @@ class GamePrompt(cmd.Cmd):
 
         if line.lower() == "quit" or line.lower() == "q":
             self.result = "quit"
-            return True
         elif line.lower() == "look" or line.lower() == "l":
             self.room()        
         elif line.lower().startswith("say ") or line.lower().startswith("'"):
