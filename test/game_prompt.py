@@ -3,6 +3,7 @@ import cmd
 from helpers import *
 from console_window import ConsoleWindow
 from autogen import say_reducer
+from autogen import go_reducer
 
 class GamePrompt(cmd.Cmd):
     result = None
@@ -21,7 +22,7 @@ class GamePrompt(cmd.Cmd):
         if len(room.exits) > 0:
             exits_strs = []        
             for exit in room.exits:
-                exits_strs.append((str(exit.direction.name)).lower())
+                exits_strs.append(exit.direction.lower())
             exits_str = ', '.join(exits_strs)            
         else:
             exits_str = "NONE"
@@ -42,16 +43,16 @@ class GamePrompt(cmd.Cmd):
         
         ConsoleWindow.instance.prompt()
 
-    def do_go(self, direction):
+    def do_go(self, exit):
         """Go in a direction"""
         room = get_local_player_room()
-        if direction not in room.exits:
+        if exit not in room.exits:
             ConsoleWindow.instance.print(f"You can't go that way!\n")
             ConsoleWindow.instance.prompt()
 
             return
-        self.current_room = room['exits'][direction]
-        self.update_prompt()
+        
+        go_reducer.go(get_local_player_entity_id(), exit.direction)
 
     def command(self, line: str):
         room = get_local_player_room()

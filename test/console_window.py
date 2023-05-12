@@ -53,6 +53,7 @@ class ConsoleWindow(QMainWindow):
             text = '\n\n' + text
 
         cursor.insertText(text, char_format)
+        self.output_text_edit.ensureCursorVisible()
 
         self.last_print_was_prompt = False
 

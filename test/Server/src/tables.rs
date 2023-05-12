@@ -9,20 +9,6 @@ pub struct Globals {
     pub spawnable_entity_id_counter: u64,
 }
 
-#[derive(SpacetimeType)]
-pub enum ExitDirection {
-    N,
-    NW,
-    W,
-    SW,
-    S,
-    SE,
-    E,
-    NE,
-    U,
-    D,
-}
-
 #[spacetimedb(table)]
 #[derive(Clone)]
 pub struct Location {
@@ -76,7 +62,7 @@ pub struct RoomChat {
 
 #[derive(SpacetimeType)]
 pub struct Exit {
-    pub direction: ExitDirection,
+    pub direction: String,
     pub examine: String,
     pub destination_room_id: String,
 }

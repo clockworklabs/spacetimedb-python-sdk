@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use helpers::next_spawnable_entity_id;
 use spacetimedb::{rt::log, schedule, spacetimedb, ReducerContext, Timestamp};
-use tables::{Exit, ExitDirection, Globals, Location, Mobile, Player, Room, RoomChat};
+use tables::{Exit, Globals, Location, Mobile, Player, Room, RoomChat};
 
 #[spacetimedb(init)]
 pub fn initialize() {
@@ -20,7 +20,20 @@ pub fn initialize() {
         name: "Clockwork Labs Lobby".into(),
         description: "    The main lobby of this Silicon Valley startup is an enchanting amalgamation of futuristic eccentricity and vibrant energy. As one steps into the space, they are greeted by a symphony of neon lights dancing across the walls, juxtaposed with sleek, minimalist furniture adorned with plush, oversized cushions in vivid hues.\n    The atmosphere buzzes with the echoes of passionate conversations, the whirring of espresso machines, and the occasional ping-pong ball ricocheting in the air, epitomizing the dynamic spirit of innovation that permeates the company's culture.".into(),
         exits: vec![Exit {
-            direction: ExitDirection::NE,
+            direction: "n".into(),
+            examine: "An exit".into(),
+            destination_room_id: "office1".into(),
+        }],
+        spawnable_entities: Vec::new(),
+    });
+
+    Room::insert(Room {
+        room_id: "office1".into(),
+
+        name: "3Blave's Code Cave".into(),
+        description: "    You find yourself in a mysterious and unconventional office space that belongs to an eccentric programmer. Within its walls, a vibrant blend of chaos and creativity unfolds. \n    Overflowing with bizarre decorations, quirky gadgets, and walls adorned with enigmatic algorithms, the Code Cave serves as the sanctuary where the Mad Coder's genius flourishes amidst the madness, producing innovative and unconventional software solutions that defy traditional norms.".into(),
+        exits: vec![Exit {
+            direction: "s".into(),
             examine: "An exit".into(),
             destination_room_id: "start".into(),
         }],
@@ -112,6 +125,34 @@ pub fn say(
                     .unwrap()
                     .as_millis() as u64,
             });
+        } else {
+            return Err("No location found.".into());
+        }
+    } else {
+        return Err("No mobile found.".into());
+    }
+
+    Ok(())
+}
+
+#[spacetimedb(reducer)]
+pub fn go(
+    _ctx: ReducerContext,
+    source_spawnable_entity_id: u64,
+    exit_direction: String,
+) -> Result<(), String> {
+    if let Some(location) = Location::filter_by_spawnable_entity_id(&source_spawnable_entity_id) {
+        let mut new_location = location.clone();
+        if let Some(room_id) = location.room_id.clone() {
+            let room = Room::filter_by_room_id(&room_id).unwrap();
+            let exit = room.exits.iter().find(|e| e.direction == exit_direction);
+            if let Some(exit) = exit {
+                new_location.last_room_id = location.room_id.clone();
+                new_location.room_id = Some(exit.destination_room_id.clone());
+                Location::update_by_spawnable_entity_id(&source_spawnable_entity_id, new_location);
+            } else {
+                return Err("Invalid exit.".into());
+            }
         } else {
             return Err("No location found.".into());
         }

@@ -28,10 +28,11 @@ class SubscriptionUpdateMessage(ClientApiMessage):
 
 
 class TransactionUpdateMessage(ClientApiMessage):
-    def __init__(self, caller_identity, status, reducer, args):
+    def __init__(self, caller_identity, status, message, reducer, args):
         super().__init__("TransactionUpdate")
         self.caller_identity = caller_identity
         self.status = status
+        self.message = message
         self.reducer = reducer
         self.args = args
 
@@ -82,7 +83,7 @@ class NetworkManager:
 
         self._row_update_callbacks[table_name].append(callback)
 
-    # callback args: caller_identity, status (committed, failed), args
+    # callback args: caller_identity, status (committed, failed), message, args
     def register_reducer(self, reducer_name, callback):
         if reducer_name not in self._reducer_callbacks:
             self._reducer_callbacks[reducer_name] = []
@@ -105,7 +106,7 @@ class NetworkManager:
 
     def reducer_call(self, reducer, *args):
         if not self.wsc.is_connected:
-            print("[reducer_call] Not connected")
+            print("[reducer_call] Not connected")        
 
         message = {
             "fn": reducer,
@@ -143,6 +144,7 @@ class NetworkManager:
                 clientapi_message = TransactionUpdateMessage(
                     spacetime_message["event"]["caller_identity"],
                     spacetime_message["event"]["status"],
+                    spacetime_message["event"]["message"],
                     spacetime_message["event"]["function_call"]["reducer"],
                     json.loads(spacetime_message["event"]["function_call"]["args"]),
                 )
@@ -218,6 +220,7 @@ class NetworkManager:
                         reducer_callback(
                             bytes.fromhex(next_message.caller_identity),
                             next_message.status,
+                            next_message.message,
                             args_class(next_message.args)
                          )
                 

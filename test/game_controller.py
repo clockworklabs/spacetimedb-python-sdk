@@ -32,7 +32,7 @@ class GameController:
         NetworkManager.init(autogen, on_connect=self.on_connect)
         NetworkManager.instance.register_on_transaction(self.on_transaction)
 
-        reducer_handlers.register()
+        reducer_handlers.register(self)
 
     # returns True if should exit
     def update(self):

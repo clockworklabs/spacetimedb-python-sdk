@@ -24,4 +24,4 @@ def get_local_player_room() -> Room:
     return Room.filter_by_room_id(get_local_player_room_id())
 
 def get_exits_strs(room):
-    return [(str(exit.direction)).lower() for exit in room.exits]            
+    return [exit.direction for exit in room.exits]
