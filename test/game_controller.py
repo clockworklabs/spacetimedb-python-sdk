@@ -1,10 +1,5 @@
-import threading
-import time
-
-from colorful import Colorful
-
 from network_manager import NetworkManager
-from client_cache import ClientCache
+
 import autogen
 
 from create_char_prompt import CreateCharPrompt
@@ -12,6 +7,14 @@ from game_prompt import GamePrompt
 from helpers import *
 from autogen.player import Player
 from autogen.create_player_reducer import create_player
+from console_window import ConsoleWindow
+from enum import Enum
+
+class GameState(Enum):
+    CONNECTING = 1
+    CREATE_CHARACTER = 2
+    WAIT_FOR_PLAYER = 3
+    GAME = 4
 
 class GameController:
     network_manager = None
@@ -20,56 +23,47 @@ class GameController:
     local_identity = None
     should_exit = False
 
+    game_state = GameState.CONNECTING
+
     def __init__(self):
         NetworkManager.init(autogen, on_connect=self.on_connect)
         NetworkManager.instance.register_on_transaction(self.on_transaction)
 
-        # DAB Note: this should be called on the main thread but cmdloop blocks (we need to fix this)
-        self.update_thread = threading.Thread(target=self.network_update)
-        self.update_thread.start()
+    # returns True if should exit
+    def update(self):
+        # Execute your desired function or code here
+        NetworkManager.instance.update()
 
-    def network_update(self):
-        while not self.should_exit:
-            # Execute your desired function or code here
-            NetworkManager.instance.update()
-            time.sleep(0.1)        
+        # DAB Todo: Break these up into functions
+        if self.game_state == GameState.CONNECTING:
+            if self.initialized:
+                player = Player.filter_by_identity(self.local_identity)
+                if player is not None:     
+                    ConsoleWindow.instance.print("Welcome back {}".format(get_name(player.spawnable_entity_id))) 
+                    self.game_state = GameState.GAME
+                else:
+                    self.game_state = GameState.CREATE_CHARACTER
+                    self.prompt = CreateCharPrompt()
+        elif self.game_state == GameState.CREATE_CHARACTER:
+            if self.prompt.result:
+                if self.prompt.result == "success":
+                    # wait for player
+                    create_player(self.prompt.name, self.prompt.description)
+                    self.game_state = GameState.WAIT_FOR_PLAYER
+                else:
+                    return True
+        elif self.game_state == GameState.WAIT_FOR_PLAYER:
+            player = Player.filter_by_identity(self.local_identity)
+            if player:
+                ConsoleWindow.instance.print("Welcome {}".format(get_name(player.spawnable_entity_id)))
+                self.prompt = GamePrompt()
+                self.game_state = GameState.GAME
+        
 
     def on_transaction(self):
         if not self.initialized:
             self.local_identity = NetworkManager.instance.identity
-            self.initialized = True
-
-    def play(self):        
-        # wait for game state
-        while not self.initialized:
-            time.sleep(0.1)
-        
-        c = Colorful()
-
-        player = Player.filter_by_identity(self.local_identity)
-        if player is not None:       
-            print("Welcome back {}\n".format(get_name(player.spawnable_entity_id)))                               
-        else:
-            self.prompt = CreateCharPrompt(c)
-            self.prompt.cmdloop()
-            if self.prompt.success:
-                # wait for player
-                create_player(self.prompt.name, self.prompt.description)
-                while player is None:
-                    player = Player.filter_by_identity(self.local_identity)
-
-                print("Welcome {}\n".format(get_name(player.spawnable_entity_id)))
-
-        if player is not None:
-            # Start the prompt loop
-            self.prompt = GamePrompt(c)
-            self.prompt.cmdloop()
-
-        print("Thanks for playing!")
-
-        # Stop the update thread
-        self.should_exit = True
-        NetworkManager.instance.close()    
+            self.initialized = True  
 
     def on_connect(self):
         NetworkManager.instance.subscribe(

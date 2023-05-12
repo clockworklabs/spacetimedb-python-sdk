@@ -8,3 +8,6 @@ __pycache__/
 # Virtual environments
 venv/
 *.venv/
+
+# spacetime sdk config
+.pythonsdk/

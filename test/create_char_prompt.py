@@ -1,47 +1,43 @@
 import cmd
 from enum import Enum
 
+from console_window import ConsoleWindow
+
 class CreateCharState(Enum):
     NAME = 1,
     DESCRIPTION = 2,
     CONFIRM = 3,
     
-class CreateCharPrompt(cmd.Cmd):    
-    prompt = 'What do you wish to be called\n>> '
+class CreateCharPrompt():    
     create_char_state = CreateCharState.NAME
 
-    def __init__(self,c):
+    def __init__(self):
         super().__init__()
         self.name = None
         self.description = None
         self.success = False
-        self.c = c
+        self.result = None
 
-    def update_prompt(self):
-        if self.create_char_state == CreateCharState.NAME:
-            self.prompt = 'What do you wish to be called?\n>> ',
-        elif self.create_char_state == CreateCharState.DESCRIPTION:
-            self.prompt = 'Provide a brief description.\n>> '
-        elif self.create_char_state == CreateCharState.CONFIRM:
-            self.prompt = 'Name: {}\nDescription: {}\n\nDo you wish to create this character?\n>> '.format(self.name,self.description)
+        ConsoleWindow.instance.print('What do you wish to be called?\n>> ')   
 
-    def do_quit(self, arg):
-        """Quit the game"""
-        return True
-
-    def default(self, line: str) -> None:
-        if self.create_char_state == CreateCharState.NAME:
-            self.name = line
-            self.create_char_state = CreateCharState.DESCRIPTION
-            self.update_prompt()
-        elif self.create_char_state == CreateCharState.DESCRIPTION:
-            self.description = line
-            self.create_char_state = CreateCharState.CONFIRM
-            self.update_prompt()
-        elif self.create_char_state == CreateCharState.CONFIRM:
-            if(line.lower() == 'y' or line.lower() == 'yes'):
-                self.success = True
-                return True
-            else:
-                self.create_char_state = CreateCharState.NAME
-                self.update_prompt()
+    def command(self, line: str) -> None:
+        if line.lower() == "quit":
+            self.result = "quit"
+            return True
+        else:
+            if self.create_char_state == CreateCharState.NAME:
+                self.name = line
+                self.create_char_state = CreateCharState.DESCRIPTION
+                ConsoleWindow.instance.print('Provide a brief description.\n>> ')
+            elif self.create_char_state == CreateCharState.DESCRIPTION:
+                self.description = line
+                self.create_char_state = CreateCharState.CONFIRM
+                ConsoleWindow.instance.print('Name: {}\nDescription: {}\n\nDo you wish to create this character?\n>> '.format(self.name,self.description))            
+            elif self.create_char_state == CreateCharState.CONFIRM:
+                if(line.lower() == 'y' or line.lower() == 'yes'):
+                    self.result = "success"
+                    return True
+                else:
+                    self.create_char_state = CreateCharState.NAME
+                    ConsoleWindow.instance.print('What do you wish to be called?\n>> ')
+                

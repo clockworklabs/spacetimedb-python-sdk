@@ -1,6 +1,7 @@
 import cmd
 
 from helpers import *
+from console_window import ConsoleWindow
 
 class GamePrompt(cmd.Cmd):
     prompt = '>> '    
@@ -11,10 +12,12 @@ class GamePrompt(cmd.Cmd):
         self.c = c        
         self.update_prompt()        
 
-    def update_prompt(self):
+    def room(self):
         room = get_local_player_room()
         
-        room_name = self.c.blue(room.name)
+        room_name = room.name
+        ConsoleWindow.instance.print(room_name,"blue")
+
         if len(room.exits) > 0:
             exits_names = []        
             for exit in room.exits:
@@ -23,7 +26,7 @@ class GamePrompt(cmd.Cmd):
         else:
             exits_str = "NONE"
 
-        exits_str = self.c.yellow(f"[EXITS: {exits_str}]")
+        exits_str = f"[EXITS: {exits_str}]"
 
         spawnables_list = []
         for spawnable in Location.filter_by_room_id(room.room_id):
@@ -34,8 +37,12 @@ class GamePrompt(cmd.Cmd):
         if(len(spawnables_list) > 0):
             spawnables_str = spawnables_str + "\n"
 
-        prompt = self.c.red('>> ')
-        self.prompt = f'{room_name}\n{room.description}\n{exits_str}\n{spawnables_str}{prompt}'
+        prompt = '>> '
+
+        ConsoleWindow.instance.print(f'{room_name}\n{room.description}\n{exits_str}\n{spawnables_str}{prompt}')
+
+    def command(self):
+        
 
     def do_quit(self, arg):
         """Quit the game"""
