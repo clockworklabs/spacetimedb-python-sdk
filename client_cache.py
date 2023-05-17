@@ -54,7 +54,7 @@ class ClientCache:
                 # check if its a reducer
                 if module_name.endswith("_reducer"):
                     reducer_name = module_name[:-len("_reducer")]
-                    args_class = getattr(module,"ReducerArgs")
+                    args_class = getattr(module,"_decode_args")
                     self.reducer_cache[reducer_name] = args_class
                 else:
                     # Assuming table class name is the same as the module name

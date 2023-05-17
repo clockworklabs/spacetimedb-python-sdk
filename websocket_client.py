@@ -52,7 +52,7 @@ class WebSocketClient:
 
     def send(self, data):
         if not self.is_connected:
-            print("Not connected")
+            print("[send] Not connected")
 
         self.ws.send(data)
 
@@ -63,10 +63,6 @@ class WebSocketClient:
         self.is_connected = True
         if self._on_connect:
             self._on_connect()
-
-        #print("Connected to WebSocket server")
-        # message = {"type": "hello", "data": "Hello, server!"}
-        # self.ws.send(json.dumps(message))
 
     def on_message(self, ws, message):
         # Process incoming message on a separate thread here
@@ -81,9 +77,7 @@ class WebSocketClient:
     def on_error(self, ws, error):
         if self._on_error:
             self._on_error(error)
-        print(f"WebSocket error occurred: {error}")
 
     def on_close(self, ws, status_code, close_msg):
         if self._on_close:
             self._on_close(close_msg)
-        #print("Disconnected from WebSocket server")

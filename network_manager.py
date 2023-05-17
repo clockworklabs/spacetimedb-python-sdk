@@ -215,12 +215,12 @@ class NetworkManager:
 
                 # call reducer callback
                 if next_message.reducer in self._reducer_callbacks:
-                    args_class = ClientCache.instance.reducer_cache[next_message.reducer]
+                    decode_func = ClientCache.instance.reducer_cache[next_message.reducer]
                     for reducer_callback in self._reducer_callbacks[next_message.reducer]:
                         reducer_callback(
                             bytes.fromhex(next_message.caller_identity),
                             next_message.status,
                             next_message.message,
-                            args_class(next_message.args)
+                            *decode_func(next_message.args)
                          )
                 

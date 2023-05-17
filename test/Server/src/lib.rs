@@ -4,7 +4,7 @@ pub mod tables;
 use std::time::Duration;
 
 use helpers::next_spawnable_entity_id;
-use spacetimedb::{rt::log, schedule, spacetimedb, ReducerContext, Timestamp};
+use spacetimedb::{schedule, spacetimedb, ReducerContext, Timestamp};
 use tables::{Exit, Globals, Location, Mobile, Player, Room, RoomChat};
 
 #[spacetimedb(init)]
