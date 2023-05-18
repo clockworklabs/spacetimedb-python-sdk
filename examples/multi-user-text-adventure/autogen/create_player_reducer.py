@@ -3,24 +3,25 @@
 
 from typing import List, Callable
 
-from network_manager import NetworkManager
+from spacetimedb_python_sdk.network_manager import NetworkManager
 
 
-def sign_in(player_spawnable_entity_id: int):
-	player_spawnable_entity_id = player_spawnable_entity_id
-	NetworkManager.instance.reducer_call("sign_in", player_spawnable_entity_id)
+def create_player(name: str, description: str):
+	name = name
+	description = description
+	NetworkManager.instance._reducer_call("create_player", name, description)
 
-def register_on_sign_in(callback: Callable[[int], None]):
+def register_on_create_player(callback: Callable[[str, str], None]):
 	if not _check_callback_signature(callback):
 		raise ValueError("Callback signature does not match expected arguments")
 
-	NetworkManager.instance.register_reducer("sign_in", callback)
+	NetworkManager.instance._register_reducer("create_player", callback)
 
 def _decode_args(data):
-	return [int(data[0])]
+	return [str(data[0]), str(data[1])]
 
 def _check_callback_signature(callback: Callable) -> bool:
-	expected_arguments = [bytes, str, str, int]
+	expected_arguments = [bytes, str, str, str, str]
 	callback_arguments = callback.__annotations__.values()
 
 	return list(callback_arguments) == expected_arguments

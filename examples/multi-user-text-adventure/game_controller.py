@@ -1,6 +1,6 @@
 from enum import Enum
 
-from network_manager import NetworkManager
+from spacetimedb_python_sdk.network_manager import NetworkManager
 
 import autogen
 from autogen.player import Player
@@ -29,7 +29,7 @@ class GameController:
     game_state = GameState.CONNECTING
 
     def __init__(self):
-        NetworkManager.init(autogen, on_connect=self.on_connect)
+        NetworkManager.init("localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect)
         NetworkManager.instance.register_on_transaction(self.on_transaction)
 
         reducer_handlers.register(self)

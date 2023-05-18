@@ -2,13 +2,18 @@
 # WILL NOT BE SAVED. MODIFY TABLES IN RUST INSTEAD.
 
 from __future__ import annotations
-from typing import List, Iterator
+from typing import List, Iterator, Callable
 
-from client_cache import ClientCache
+from spacetimedb_python_sdk.client_cache import ClientCache
+from spacetimedb_python_sdk.network_manager import NetworkManager
 from .exit import Exit
 
 class Room:
 	is_table_class = True
+
+	@classmethod
+	def register_row_update(cls, callback: Callable[[str,Room,Room], None]):
+		NetworkManager.instance._register_row_update("Room",callback)
 
 	@classmethod
 	def iter(cls) -> Iterator[Room]:

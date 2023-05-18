@@ -3,18 +3,18 @@
 
 from typing import List, Callable
 
-from network_manager import NetworkManager
+from spacetimedb_python_sdk.network_manager import NetworkManager
 
 
 def sign_out(player_spawnable_entity_id: int):
 	player_spawnable_entity_id = player_spawnable_entity_id
-	NetworkManager.instance.reducer_call("sign_out", player_spawnable_entity_id)
+	NetworkManager.instance._reducer_call("sign_out", player_spawnable_entity_id)
 
 def register_on_sign_out(callback: Callable[[int], None]):
 	if not _check_callback_signature(callback):
 		raise ValueError("Callback signature does not match expected arguments")
 
-	NetworkManager.instance.register_reducer("sign_out", callback)
+	NetworkManager.instance._register_reducer("sign_out", callback)
 
 def _decode_args(data):
 	return [int(data[0])]

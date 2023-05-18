@@ -5,7 +5,7 @@ import configparser
 home_dir = os.path.expanduser("~")
 
 # Create a path to the settings file in the user's home directory
-settings_path = os.path.join(".", ".pythonsdk", "settings.ini")
+settings_path = os.path.join(home_dir, ".pythonsdk", "settings.ini")
 
 # Create a ConfigParser object and read the settings file (if it exists)
 config = configparser.ConfigParser()
@@ -13,9 +13,7 @@ if os.path.exists(settings_path):
     config.read(settings_path)
 else:
     # Set some default config values
-    config["main"] = {
-        "host": "localhost:3000",
-        "database": "test",
+    config["main"] = {        
     }
 
 def set_config(config_in):

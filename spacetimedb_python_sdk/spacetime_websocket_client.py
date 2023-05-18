@@ -15,15 +15,15 @@ class WebSocketClient:
         self.ws = None
         self.message_thread = None
         self.host = None
-        self.nameOrAddress = None
+        self.name_or_address = None
         self.is_connected = False
 
-    def connect(self, auth, host, nameOrAddress, sslEnabled):
-        protocol = "wss" if sslEnabled else "ws"
-        url = f"{protocol}://{host}/database/subscribe?name_or_address={nameOrAddress}"
+    def connect(self, auth, host, name_or_address, ssl_enabled):
+        protocol = "wss" if ssl_enabled else "ws"
+        url = f"{protocol}://{host}/database/subscribe?name_or_address={name_or_address}"
 
         self.host = host
-        self.nameOrAddress = nameOrAddress
+        self.name_or_address = name_or_address
 
         ws_header = None
         if auth:

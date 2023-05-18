@@ -9,5 +9,5 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-spacetimedb = { path = "../../../SpacetimeDB/crates/bindings", features = ["getrandom"] }
+spacetimedb = { path = "../../../../SpacetimeDB/crates/bindings", features = ["getrandom"] }
 log = "0.4" 

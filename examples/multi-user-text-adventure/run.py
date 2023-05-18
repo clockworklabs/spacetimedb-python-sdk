@@ -6,8 +6,8 @@ import time
 from PyQt6.QtWidgets import QApplication
 from console_window import ConsoleWindow
 
-# Get the parent directory of the current file
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Get the directory of sdk module
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Add the parent directory to the system path
 sys.path.append(parent_dir)

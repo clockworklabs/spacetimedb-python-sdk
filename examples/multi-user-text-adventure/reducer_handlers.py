@@ -1,4 +1,4 @@
-from network_manager import NetworkManager
+from spacetimedb_python_sdk.network_manager import NetworkManager
 from helpers import *
 from console_window import ConsoleWindow
 from autogen import create_player_reducer, go_reducer, sign_in_reducer, sign_out_reducer, say_reducer

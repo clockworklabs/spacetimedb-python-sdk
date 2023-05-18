@@ -2,12 +2,17 @@
 # WILL NOT BE SAVED. MODIFY TABLES IN RUST INSTEAD.
 
 from __future__ import annotations
-from typing import List, Iterator
+from typing import List, Iterator, Callable
 
-from client_cache import ClientCache
+from spacetimedb_python_sdk.client_cache import ClientCache
+from spacetimedb_python_sdk.network_manager import NetworkManager
 
 class Mobile:
 	is_table_class = True
+
+	@classmethod
+	def register_row_update(cls, callback: Callable[[str,Mobile,Mobile], None]):
+		NetworkManager.instance._register_row_update("Mobile",callback)
 
 	@classmethod
 	def iter(cls) -> Iterator[Mobile]:

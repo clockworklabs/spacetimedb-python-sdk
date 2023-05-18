@@ -3,19 +3,19 @@
 
 from typing import List, Callable
 
-from network_manager import NetworkManager
+from spacetimedb_python_sdk.network_manager import NetworkManager
 
 
-def go(source_spawnable_entity_id: int, exit_direction: str):
+def say(source_spawnable_entity_id: int, chat_text: str):
 	source_spawnable_entity_id = source_spawnable_entity_id
-	exit_direction = exit_direction
-	NetworkManager.instance.reducer_call("go", source_spawnable_entity_id, exit_direction)
+	chat_text = chat_text
+	NetworkManager.instance._reducer_call("say", source_spawnable_entity_id, chat_text)
 
-def register_on_go(callback: Callable[[int, str], None]):
+def register_on_say(callback: Callable[[int, str], None]):
 	if not _check_callback_signature(callback):
 		raise ValueError("Callback signature does not match expected arguments")
 
-	NetworkManager.instance.register_reducer("go", callback)
+	NetworkManager.instance._register_reducer("say", callback)
 
 def _decode_args(data):
 	return [int(data[0]), str(data[1])]

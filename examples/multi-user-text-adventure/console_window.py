@@ -1,3 +1,5 @@
+import os
+
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QTextEdit, QLineEdit, QWidget
 from PyQt6.QtGui import QTextCursor, QTextCharFormat, QColor, QIcon
@@ -31,7 +33,11 @@ class ConsoleWindow(QMainWindow):
         self.command_line_edit.returnPressed.connect(self.process_command)
 
         self.setWindowTitle("SpacetimeMUD")
-        self.setWindowIcon(QIcon("logo.png"))
+
+        # Get the path to the current module
+        module_path = os.path.dirname(os.path.abspath(__file__))
+
+        self.setWindowIcon(QIcon(os.path.join(module_path, "logo.png")))
 
     def process_command(self):
         command = self.command_line_edit.text()

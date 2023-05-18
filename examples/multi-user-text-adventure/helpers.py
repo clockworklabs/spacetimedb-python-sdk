@@ -1,4 +1,4 @@
-from network_manager import NetworkManager
+from spacetimedb_python_sdk.network_manager import NetworkManager
 
 from autogen.mobile import Mobile
 from autogen.player import Player
