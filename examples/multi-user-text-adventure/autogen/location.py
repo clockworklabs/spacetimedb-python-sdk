@@ -5,30 +5,30 @@ from __future__ import annotations
 from typing import List, Iterator, Callable
 
 from spacetimedb_python_sdk.client_cache import ClientCache
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 class Location:
 	is_table_class = True
 
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,Location,Location], None]):
-		NetworkManager.instance._register_row_update("Location",callback)
+		SpacetimeDBClient.instance._register_row_update("Location",callback)
 
 	@classmethod
 	def iter(cls) -> Iterator[Location]:
-		return ClientCache.instance.get_table_cache("Location").values()
+		return SpacetimeDBClient.instance._get_table_cache("Location").values()
 
 	@classmethod
 	def filter_by_spawnable_entity_id(cls, spawnable_entity_id) -> Location:
-		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("Location").values() if column_value.spawnable_entity_id == spawnable_entity_id]), None)
+		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Location").values() if column_value.spawnable_entity_id == spawnable_entity_id]), None)
 
 	@classmethod
 	def filter_by_room_id(cls, room_id) -> List[Location]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("Location").values() if column_value.room_id == room_id]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Location").values() if column_value.room_id == room_id]
 
 	@classmethod
 	def filter_by_last_room_id(cls, last_room_id) -> List[Location]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("Location").values() if column_value.last_room_id == last_room_id]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Location").values() if column_value.last_room_id == last_room_id]
 
 	def __init__(self, data: List[object]):
 		self.data = {}

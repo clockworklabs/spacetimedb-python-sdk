@@ -3,19 +3,19 @@
 
 from typing import List, Callable
 
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 
 def create_player(name: str, description: str):
 	name = name
 	description = description
-	NetworkManager.instance._reducer_call("create_player", name, description)
+	SpacetimeDBClient.instance._reducer_call("create_player", name, description)
 
-def register_on_create_player(callback: Callable[[str, str], None]):
+def register_on_create_player(callback: Callable[[bytes, str, str, str, str], None]):
 	if not _check_callback_signature(callback):
 		raise ValueError("Callback signature does not match expected arguments")
 
-	NetworkManager.instance._register_reducer("create_player", callback)
+	SpacetimeDBClient.instance._register_reducer("create_player", callback)
 
 def _decode_args(data):
 	return [str(data[0]), str(data[1])]

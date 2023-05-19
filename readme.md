@@ -1,12 +1,12 @@
 # SpacetimeDB Python SDK
 
-A comprehensive software development kit (SDK) designed to facilitate the creation of client applications that interact with SpaceTimeDB modules.
+A comprehensive software development kit (SDK) designed to facilitate the creation of client applications that interact with SpacetimeDB modules.
 
 ## Key Features
 
 ### Connection Management
 
-The SDK simplifies the process of establishing and managing connections to the SpaceTimeDB module. Developers can establish secure WebSocket connections, enabling real-time communication with the module.
+The SDK simplifies the process of establishing and managing connections to the SpacetimeDB module. Developers can establish secure WebSocket connections, enabling real-time communication with the module.
 
 ### Local Client Cache
 

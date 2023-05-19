@@ -1,8 +1,8 @@
 <!-- markdownlint-disable -->
 
-<a href="..\network_manager.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-# <kbd>module</kbd> `network_manager`
+# <kbd>module</kbd> `spacetimedb_client`
 
 
 
@@ -11,7 +11,7 @@
 
 ---
 
-<a href="..\network_manager.py#L11"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L11"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `DbEvent`
 Represents a database event. 
@@ -25,7 +25,7 @@ Represents a database event.
  - <b>`row_op`</b> (str):  The operation performed on the row (e.g., "insert", "update", "delete"). 
  - <b>`decoded_value`</b> (Any, optional):  The decoded value of the affected row. Defaults to None. 
 
-<a href="..\network_manager.py#L21"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L21"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `DbEvent.__init__`
 
@@ -43,12 +43,12 @@ __init__(table_name, row_pk, row_op, decoded_value=None)
 
 ---
 
-<a href="..\network_manager.py#L48"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L48"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TransactionUpdateMessage`
 Represents a transaction update message. Used in on_event callbacks. 
 
-For more details, see `network_manager.NetworkManager.register_on_event` 
+For more details, see `spacetimedb_client.SpacetimeDBClient.register_on_event` 
 
 
 
@@ -61,7 +61,7 @@ For more details, see `network_manager.NetworkManager.register_on_event`
  - <b>`args`</b> (dict):  Additional arguments for the transaction. 
  - <b>`events`</b> (List[DbEvent]):  List of DBEvents that were committed. 
 
-<a href="..\network_manager.py#L62"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L62"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `TransactionUpdateMessage.__init__`
 
@@ -84,7 +84,7 @@ __init__(
 
 ---
 
-<a href="..\network_manager.py#L36"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L36"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `TransactionUpdateMessage.append_event`
 
@@ -99,14 +99,14 @@ append_event(event)
 
 ---
 
-<a href="..\network_manager.py#L71"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L71"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-## <kbd>class</kbd> `NetworkManager`
-The NetworkManager class is the primary interface for communication with the SpacetimeDB Module in the SDK, facilitating interaction with the database. 
+## <kbd>class</kbd> `SpacetimeDBClient`
+The SpacetimeDBClient class is the primary interface for communication with the SpacetimeDB Module in the SDK, facilitating interaction with the database. 
 
-<a href="..\network_manager.py#L97"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L97"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `NetworkManager.close`
+### <kbd>method</kbd> `SpacetimeDBClient.close`
 
 ```python
 close()
@@ -124,13 +124,13 @@ This function closes the WebSocket connection to the SpaceTimeDB module.
 >
 
 **Example:**
-  NetworkManager.instance.close() 
+  SpacetimeDBClient.instance.close() 
 
 ---
 
-<a href="..\network_manager.py#L78"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L78"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>classmethod</kbd> `NetworkManager.init`
+### <kbd>classmethod</kbd> `SpacetimeDBClient.init`
 
 ```python
 init(
@@ -160,17 +160,17 @@ Create a network manager instance.
 
 
 **Example:**
- NetworkManager.init(autogen, on_connect=self.on_connect) 
+ SpacetimeDBClient.init(autogen, on_connect=self.on_connect) 
 
 ---
 
-<a href="..\network_manager.py#L199"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L199"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `NetworkManager.register_on_event`
+### <kbd>method</kbd> `SpacetimeDBClient.register_on_event`
 
 ```python
 register_on_event(
-    callback: Callable[[network_manager.TransactionUpdateMessage], NoneType]
+    callback: Callable[[spacetimedb_client.TransactionUpdateMessage], NoneType]
 )
 ```
 
@@ -188,13 +188,13 @@ This function registers a callback function that will be called when a reducer m
 **Example:**
   def handle_event(transaction_update):  # Code to handle the transaction update event 
 
- NetworkManager.instance.register_on_event(handle_event) 
+ SpacetimeDBClient.instance.register_on_event(handle_event) 
 
 ---
 
-<a href="..\network_manager.py#L180"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L180"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `NetworkManager.register_on_transaction`
+### <kbd>method</kbd> `SpacetimeDBClient.register_on_transaction`
 
 ```python
 register_on_transaction(callback: Callable[[], NoneType])
@@ -213,13 +213,13 @@ Register a callback function to be executed on each transaction.
 **Example:**
  def transaction_callback():  # Code to be executed on each transaction 
 
-NetworkManager.instance.register_on_transaction(transaction_callback) 
+SpacetimeDBClient.instance.register_on_transaction(transaction_callback) 
 
 ---
 
-<a href="..\network_manager.py#L160"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L160"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `NetworkManager.subscribe`
+### <kbd>method</kbd> `SpacetimeDBClient.subscribe`
 
 ```python
 subscribe(queries: List[str])
@@ -238,13 +238,13 @@ This function sends a subscription request to the SpaceTimeDB module, indicating
 
 
 **Example:**
- queries = ["SELECT * FROM table1", "SELECT * FROM table2 WHERE col2 = 0"] NetworkManager.instance.subscribe(queries) 
+ queries = ["SELECT * FROM table1", "SELECT * FROM table2 WHERE col2 = 0"] SpacetimeDBClient.instance.subscribe(queries) 
 
 ---
 
-<a href="..\network_manager.py#L125"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\spacetimedb_client.py#L125"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `NetworkManager.update`
+### <kbd>method</kbd> `SpacetimeDBClient.update`
 
 ```python
 update()
@@ -262,7 +262,7 @@ This function needs to be called on a regular frequency to handle and process in
 >
 
 **Example:**
-  NetworkManager.init(autogen, on_connect=self.on_connect)  while True:  NetworkManager.instance.update()  # Call the update function in a loop to process incoming messages  # Additional logic or code can be added here 
+  SpacetimeDBClient.init(autogen, on_connect=self.on_connect)  while True:  SpacetimeDBClient.instance.update()  # Call the update function in a loop to process incoming messages  # Additional logic or code can be added here 
 
 
 

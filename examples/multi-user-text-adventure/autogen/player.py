@@ -5,26 +5,26 @@ from __future__ import annotations
 from typing import List, Iterator, Callable
 
 from spacetimedb_python_sdk.client_cache import ClientCache
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 class Player:
 	is_table_class = True
 
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,Player,Player], None]):
-		NetworkManager.instance._register_row_update("Player",callback)
+		SpacetimeDBClient.instance._register_row_update("Player",callback)
 
 	@classmethod
 	def iter(cls) -> Iterator[Player]:
-		return ClientCache.instance.get_table_cache("Player").values()
+		return SpacetimeDBClient.instance._get_table_cache("Player").values()
 
 	@classmethod
 	def filter_by_spawnable_entity_id(cls, spawnable_entity_id) -> Player:
-		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("Player").values() if column_value.spawnable_entity_id == spawnable_entity_id]), None)
+		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Player").values() if column_value.spawnable_entity_id == spawnable_entity_id]), None)
 
 	@classmethod
 	def filter_by_identity(cls, identity) -> Player:
-		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("Player").values() if column_value.identity == identity]), None)
+		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Player").values() if column_value.identity == identity]), None)
 
 	def __init__(self, data: List[object]):
 		self.data = {}

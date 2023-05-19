@@ -38,6 +38,7 @@ if __name__ == "__main__":
     while not game_controller.should_exit:
         app.processEvents()
         game_controller.update()
+        time.sleep(1/60)
 
     game_controller.exit()
 

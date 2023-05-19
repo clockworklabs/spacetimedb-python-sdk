@@ -1,6 +1,6 @@
 from enum import Enum
 
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 import autogen
 from autogen.player import Player
@@ -9,6 +9,7 @@ from autogen.create_player_reducer import create_player
 from console_window import ConsoleWindow
 from create_char_prompt import CreateCharPrompt
 from game_prompt import GamePrompt
+import game_config
 from helpers import *
 
 import reducer_handlers
@@ -20,7 +21,6 @@ class GameState(Enum):
     GAME = 4
 
 class GameController:
-    network_manager = None
     prompt = None
     initialized = False
     local_identity = None
@@ -29,17 +29,16 @@ class GameController:
     game_state = GameState.CONNECTING
 
     def __init__(self):
-        NetworkManager.init("localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect)
-        NetworkManager.instance.register_on_transaction(self.on_transaction)
+        auth_token = game_config.get_string("auth")
+        SpacetimeDBClient.init(auth_token, "localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect)
+        SpacetimeDBClient.instance.register_on_transaction(self.on_transaction)
 
         reducer_handlers.register(self)
 
     # returns True if should exit
     def update(self):
-        # Execute your desired function or code here
-        NetworkManager.instance.update()
+        SpacetimeDBClient.instance.update()
 
-        # DAB Todo: Break these up into functions
         if self.game_state == GameState.CONNECTING:
             if self.initialized:
                 player = Player.filter_by_identity(self.local_identity)
@@ -67,15 +66,18 @@ class GameController:
         elif self.game_state == GameState.GAME:
             if self.prompt.result == "quit":
                 self.should_exit = True
-        
+    
+    def on_identity(self, auth_token, identity):
+        # save the auth_token for future sessions
+        game_config.set_string("auth", auth_token)
+        self.local_identity = SpacetimeDBClient.instance.identity
 
     def on_transaction(self):
-        if not self.initialized:
-            self.local_identity = NetworkManager.instance.identity
+        if not self.initialized:            
             self.initialized = True  
 
     def on_connect(self):
-        NetworkManager.instance.subscribe(
+        SpacetimeDBClient.instance.subscribe(
             ["SELECT * FROM Mobile", 
              "SELECT * FROM Player", 
              "SELECT * FROM Location",
@@ -83,4 +85,4 @@ class GameController:
              "SELECT * FROM RoomChat"])
 
     def exit(self):        
-        NetworkManager.instance.close()
+        SpacetimeDBClient.instance.close()

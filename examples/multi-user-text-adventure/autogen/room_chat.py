@@ -5,38 +5,38 @@ from __future__ import annotations
 from typing import List, Iterator, Callable
 
 from spacetimedb_python_sdk.client_cache import ClientCache
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 class RoomChat:
 	is_table_class = True
 
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,RoomChat,RoomChat], None]):
-		NetworkManager.instance._register_row_update("RoomChat",callback)
+		SpacetimeDBClient.instance._register_row_update("RoomChat",callback)
 
 	@classmethod
 	def iter(cls) -> Iterator[RoomChat]:
-		return ClientCache.instance.get_table_cache("RoomChat").values()
+		return SpacetimeDBClient.instance._get_table_cache("RoomChat").values()
 
 	@classmethod
 	def filter_by_chat_entity_id(cls, chat_entity_id) -> RoomChat:
-		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.chat_entity_id == chat_entity_id]), None)
+		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("RoomChat").values() if column_value.chat_entity_id == chat_entity_id]), None)
 
 	@classmethod
 	def filter_by_room_id(cls, room_id) -> List[RoomChat]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.room_id == room_id]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("RoomChat").values() if column_value.room_id == room_id]
 
 	@classmethod
 	def filter_by_source_spawnable_entity_id(cls, source_spawnable_entity_id) -> List[RoomChat]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.source_spawnable_entity_id == source_spawnable_entity_id]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("RoomChat").values() if column_value.source_spawnable_entity_id == source_spawnable_entity_id]
 
 	@classmethod
 	def filter_by_chat_text(cls, chat_text) -> List[RoomChat]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.chat_text == chat_text]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("RoomChat").values() if column_value.chat_text == chat_text]
 
 	@classmethod
 	def filter_by_timestamp(cls, timestamp) -> List[RoomChat]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("RoomChat").values() if column_value.timestamp == timestamp]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("RoomChat").values() if column_value.timestamp == timestamp]
 
 	def __init__(self, data: List[object]):
 		self.data = {}

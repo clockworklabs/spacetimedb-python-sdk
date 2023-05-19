@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import List, Iterator, Callable
 
 from spacetimedb_python_sdk.client_cache import ClientCache
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 from .exit import Exit
 
 class Room:
@@ -13,23 +13,23 @@ class Room:
 
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,Room,Room], None]):
-		NetworkManager.instance._register_row_update("Room",callback)
+		SpacetimeDBClient.instance._register_row_update("Room",callback)
 
 	@classmethod
 	def iter(cls) -> Iterator[Room]:
-		return ClientCache.instance.get_table_cache("Room").values()
+		return SpacetimeDBClient.instance._get_table_cache("Room").values()
 
 	@classmethod
 	def filter_by_room_id(cls, room_id) -> Room:
-		return next(iter([column_value for column_value in ClientCache.instance.get_table_cache("Room").values() if column_value.room_id == room_id]), None)
+		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Room").values() if column_value.room_id == room_id]), None)
 
 	@classmethod
 	def filter_by_name(cls, name) -> List[Room]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("Room").values() if column_value.name == name]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Room").values() if column_value.name == name]
 
 	@classmethod
 	def filter_by_description(cls, description) -> List[Room]:
-		return [column_value for column_value in ClientCache.instance.get_table_cache("Room").values() if column_value.description == description]
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Room").values() if column_value.description == description]
 
 	def __init__(self, data: List[object]):
 		self.data = {}

@@ -1,11 +1,9 @@
-import cmd
-
 from helpers import *
 from console_window import ConsoleWindow
 from autogen import say_reducer
 from autogen import go_reducer
 
-class GamePrompt(cmd.Cmd):
+class GamePrompt():
     result = None
 
     def __init__(self):

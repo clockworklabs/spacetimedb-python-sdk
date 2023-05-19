@@ -1,4 +1,4 @@
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 from autogen.mobile import Mobile
 from autogen.player import Player
@@ -10,7 +10,7 @@ def get_name(spawnable_entity_id) -> str:
     return mobile.name if mobile else "Unknown"
 
 def get_local_player_entity_id() -> int:
-    local_identity = NetworkManager.instance.identity
+    local_identity = SpacetimeDBClient.instance.identity
     player = Player.filter_by_identity(local_identity)
     return player.spawnable_entity_id if player else None
 

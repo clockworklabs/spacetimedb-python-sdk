@@ -5,7 +5,7 @@ import configparser
 home_dir = os.path.expanduser("~")
 
 # Create a path to the settings file in the user's home directory
-settings_path = os.path.join(home_dir, ".pythonsdk", "settings.ini")
+settings_path = os.path.join(home_dir, ".spacetime_mud", "settings.ini")
 
 # Create a ConfigParser object and read the settings file (if it exists)
 config = configparser.ConfigParser()

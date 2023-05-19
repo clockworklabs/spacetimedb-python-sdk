@@ -1,4 +1,3 @@
-import cmd
 from enum import Enum
 
 from console_window import ConsoleWindow

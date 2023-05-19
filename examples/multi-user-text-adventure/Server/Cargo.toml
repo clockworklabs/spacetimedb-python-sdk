@@ -1,5 +1,5 @@
 [package]
-name = "spacetime-module"
+name = "multi-user-text-adventure"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,5 +9,4 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-spacetimedb = { path = "../../../../SpacetimeDB/crates/bindings", features = ["getrandom"] }
-log = "0.4" 
+spacetimedb = { path = "../../../../SpacetimeDB/crates/bindings" }

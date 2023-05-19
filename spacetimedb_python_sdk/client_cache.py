@@ -31,16 +31,6 @@ class TableCache:
 
 
 class ClientCache:
-    instance = None
-
-    @classmethod
-    def get_table_cache(cls, table_name):
-        return cls.instance.tables[table_name]    
-        
-    @classmethod
-    def init(cls, autogen_package):
-        cls.instance = ClientCache(autogen_package)
-
     def __init__(self, autogen_package):
         
         self.tables = {}
@@ -66,6 +56,9 @@ class ClientCache:
                         # Check for a special property, e.g. 'is_table_class'
                         if getattr(table_class, 'is_table_class', False):
                             self.tables[table_class_name] = TableCache(table_class)
+
+    def get_table_cache(self, table_name):
+        return self.tables[table_name]            
 
     def decode(self, table_name, value):
         if not table_name in self.tables:

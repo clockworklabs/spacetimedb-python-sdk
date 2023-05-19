@@ -1,4 +1,4 @@
-from spacetimedb_python_sdk.network_manager import NetworkManager
+from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 from helpers import *
 from console_window import ConsoleWindow
 from autogen import create_player_reducer, go_reducer, sign_in_reducer, sign_out_reducer, say_reducer
@@ -29,7 +29,7 @@ def on_say(caller: bytes, status: str, message: str, source_spawnable_entity_id:
             ConsoleWindow.instance.prompt()
 
 def on_create_player(caller: bytes, status: str, message: str, name: str, description: str): 
-    if status == "committed" and NetworkManager.instance.identity != caller:
+    if status == "committed" and SpacetimeDBClient.instance.identity != caller:
         local_room_id = get_local_player_room_id()
         source_player = Player.filter_by_identity(caller)
         source_location = Location.filter_by_spawnable_entity_id(source_player.spawnable_entity_id)
@@ -60,7 +60,7 @@ def on_go(caller: bytes, status: str, message: str, source_spawnable_entity_id: 
     global _game_controller 
     
     if status == "committed":
-        if NetworkManager.instance.identity == caller:
+        if SpacetimeDBClient.instance.identity == caller:
             ConsoleWindow.instance.print("You go {}.\n".format(exit_direction))    
             _game_controller.prompt.room()
         else:
