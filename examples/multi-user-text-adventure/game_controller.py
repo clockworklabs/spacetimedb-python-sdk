@@ -30,7 +30,7 @@ class GameController:
 
     def __init__(self):
         auth_token = game_config.get_string("auth")
-        SpacetimeDBClient.init(auth_token, "localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect)
+        SpacetimeDBClient.init(auth_token, "localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect, on_identity=self.on_identity)
         SpacetimeDBClient.instance.register_on_transaction(self.on_transaction)
 
         reducer_handlers.register(self)

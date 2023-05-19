@@ -39,11 +39,11 @@ class _IdentityReceivedMessage(_ClientApiMessage):
     """
     This class is intended for internal use only and should not be used externally.
     """
-    def __init__(self, identity, auth_token):        
+    def __init__(self, auth_token, identity):        
         super().__init__("IdentityReceived")
 
-        self.identity = identity
         self.auth_token = auth_token
+        self.identity = identity        
 
 class _SubscriptionUpdateMessage(_ClientApiMessage):
     """
@@ -123,7 +123,7 @@ class SpacetimeDBClient:
         self.processed_message_queue = queue.Queue()
 
         self.wsc = WebSocketClient(
-            "v1.text.Spacetimedb", on_connect=on_connect, on_message=self._on_message
+            "v1.text.spacetimedb", on_connect=on_connect, on_message=self._on_message
         )
         self.wsc.connect(
             auth_token,
@@ -254,11 +254,10 @@ class SpacetimeDBClient:
     def _on_message(self, data):
         message = json.loads(data)
         if "IdentityToken" in message:
-            print(message)
             # is this safe to do in the message thread?
-            token = bytes.fromhex(message["IdentityToken"]["token"])
+            token = message["IdentityToken"]["token"]
             identity = bytes.fromhex(message["IdentityToken"]["identity"])
-            self.message_queue.put(_IdentityReceivedMessage(token,identity))
+            self.message_queue.put(_IdentityReceivedMessage(token, identity))
         elif "SubscriptionUpdate" in message or "TransactionUpdate" in message:
             clientapi_message = None
             table_updates = None

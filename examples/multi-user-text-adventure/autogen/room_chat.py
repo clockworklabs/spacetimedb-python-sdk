@@ -4,7 +4,6 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_python_sdk.client_cache import ClientCache
 from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 class RoomChat:
