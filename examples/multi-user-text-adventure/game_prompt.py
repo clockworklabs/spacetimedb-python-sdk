@@ -3,6 +3,8 @@ from console_window import ConsoleWindow
 from autogen import say_reducer
 from autogen import go_reducer
 
+import openai_harness
+
 class GamePrompt():
     result = None
 
@@ -61,6 +63,11 @@ class GamePrompt():
             self.result = "quit"
         elif line.lower() == "look" or line.lower() == "l":
             self.room()        
+        elif line.lower().startswith("createroom "):
+            # line example createroom direction this is the room description
+            direction = line.split(" ")[1]
+            room_description = " ".join(line.split(" ")[2:])
+            openai_harness.openapi_create_room(room.room_id, direction, room_description)
         elif line.lower().startswith("say ") or line.lower().startswith("'"):
             prefix = "say " if line.lower().startswith("say ") else "'"
             message = line[len(prefix):]

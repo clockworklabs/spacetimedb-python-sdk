@@ -20,6 +20,9 @@ def get_local_player_room_id() -> str:
         location = Location.filter_by_spawnable_entity_id(local_player_id)
         return location.room_id if location else None
     
+def get_room(room_id) -> Room:
+    return Room.filter_by_room_id(room_id)
+
 def get_local_player_room() -> Room:
     return Room.filter_by_room_id(get_local_player_room_id())
 
