@@ -17,8 +17,9 @@ import reducer_handlers
 class GameState(Enum):
     CONNECTING = 1
     CREATE_CHARACTER = 2
-    WAIT_FOR_PLAYER = 3
-    GAME = 4
+    SELECT_WORLD = 3
+    WAIT_FOR_PLAYER = 4
+    GAME = 5
 
 class GameController:
     prompt = None
@@ -30,7 +31,7 @@ class GameController:
 
     def __init__(self):
         auth_token = game_config.get_string("auth")
-        SpacetimeDBClient.init(auth_token, "localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect, on_identity=self.on_identity)
+        SpacetimeDBClient.init(auth_token, "localhost:3000", "examplemud", False, autogen, on_connect=self.on_connect, on_identity=self.on_identity)
         SpacetimeDBClient.instance.register_on_transaction(self.on_transaction)
 
         reducer_handlers.register(self)
@@ -81,6 +82,8 @@ class GameController:
             ["SELECT * FROM Mobile", 
              "SELECT * FROM Player", 
              "SELECT * FROM Location",
+             "SELECT * FROM World",
+             "SELECT * FROM Zone",
              "SELECT * FROM Room",
              "SELECT * FROM RoomChat"])
 

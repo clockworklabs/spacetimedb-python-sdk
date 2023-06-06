@@ -37,15 +37,40 @@ pub struct Player {
     pub identity: Identity,
 }
 
+#[derive(Clone)]
 #[spacetimedb(table)]
 pub struct Room {
     #[unique]
     pub room_id: String,
 
+    pub zone_id: String,
+
     pub name: String,
     pub description: String,
     pub exits: Vec<Exit>,
-    pub spawnable_entities: Vec<u64>,
+}
+
+#[derive(Clone)]
+#[spacetimedb(table)]
+pub struct World {
+    #[unique]
+    pub world_id: String,
+
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Clone)]
+#[spacetimedb(table)]
+pub struct Zone {
+    #[unique]
+    pub zone_id: String,
+
+    pub world_id: String,
+
+    pub name: String,
+    pub description: String,
+    pub connecting_zones: Vec<String>,
 }
 
 #[spacetimedb(table)]
@@ -60,7 +85,7 @@ pub struct RoomChat {
     pub timestamp: u64,
 }
 
-#[derive(SpacetimeType)]
+#[derive(SpacetimeType, Clone)]
 pub struct Exit {
     pub direction: String,
     pub examine: String,

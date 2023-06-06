@@ -4,6 +4,9 @@ from autogen import say_reducer
 from autogen import go_reducer
 
 import openai_harness
+from narrative_generator import NarrativeGenerator
+from zone_connection_generator import ZoneConnectionGenerator
+from zone_generator import ZoneGenerator
 
 class GamePrompt():
     result = None
@@ -63,11 +66,15 @@ class GamePrompt():
             self.result = "quit"
         elif line.lower() == "look" or line.lower() == "l":
             self.room()        
-        elif line.lower().startswith("createroom "):
+        elif line.lower().startswith("createworld "):
             # line example createroom direction this is the room description
-            direction = line.split(" ")[1]
-            room_description = " ".join(line.split(" ")[2:])
-            openai_harness.openapi_create_room(room.room_id, direction, room_description)
+            room_description = " ".join(line.split(" ")[1:])
+            NarrativeGenerator.generate(room_description)        
+        elif line.lower().startswith("dumprooms"):
+            zone_id = None
+            if(len(line.split(" ")) > 1):
+                zone_id = line.split(" ")[1]
+            print(get_zone_rooms_json(zone_id,False))
         elif line.lower().startswith("say ") or line.lower().startswith("'"):
             prefix = "say " if line.lower().startswith("say ") else "'"
             message = line[len(prefix):]

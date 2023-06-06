@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 import signal
 import time
@@ -27,6 +28,8 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGBREAK, signal_handler)
 
 if __name__ == "__main__":    
+    random.seed()
+    
     game_controller = GameController()
 
     app = QApplication(sys.argv)
