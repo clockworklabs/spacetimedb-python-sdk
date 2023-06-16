@@ -26,7 +26,7 @@ class SpacetimeDBAsyncClient:
 
         await self.close() 
     
-    async def connect(self, auth_token, host, address_or_name, ssl_enabled, autogen_package, subscription_queries=[]):
+    async def connect(self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]):
         identity_future = asyncio.get_running_loop().create_future()
 
         def on_error(error):
@@ -43,12 +43,12 @@ class SpacetimeDBAsyncClient:
         def on_identity_received(auth_token, identity):
             #print(f"Identity Recieved")
             self.identity = identity            
-            self.SpacetimeDBClient.subscribe(subscription_queries)
+            self.client.subscribe(subscription_queries)
             identity_future.set_result((auth_token, identity))
 
         #print("Connecting...")
         self.current_future = identity_future
-        self.SpacetimeDBClient = SpacetimeDBClient(auth_token, host, address_or_name, ssl_enabled, autogen_package, on_connect=None, on_error=on_error, on_disconnect=on_disconnect, on_identity=on_identity_received)
+        self.client.connect(auth_token, host, address_or_name, ssl_enabled, on_connect=None, on_error=on_error, on_disconnect=on_disconnect, on_identity=on_identity_received)
 
         await self._wait_for_future(identity_future)
 
@@ -62,8 +62,8 @@ class SpacetimeDBAsyncClient:
                 reducer_future.set_result(event)
 
         self.current_future = reducer_future
-        self.SpacetimeDBClient.register_on_event(on_reducer_result)
-        self.SpacetimeDBClient._reducer_call(reducer_name, *reducer_args)
+        self.client.register_on_event(on_reducer_result)
+        self.client._reducer_call(reducer_name, *reducer_args)
 
         await self._wait_for_future(reducer_future)
 
@@ -79,13 +79,13 @@ class SpacetimeDBAsyncClient:
             event_future.set_result("reducer_transaction",event)
 
         self.current_future = event_future
-        self.SpacetimeDBClient.register_on_event(on_event)
-        self.SpacetimeDBClient.register_on_subscription_applied(on_subscription_applied)
+        self.client.register_on_event(on_event)
+        self.client.register_on_subscription_applied(on_subscription_applied)
 
         await self._wait_for_future(event_future)
 
-        self.SpacetimeDBClient.unregister_on_event(on_event)
-        self.SpacetimeDBClient.unregister_on_subscription_applied(on_subscription_applied)
+        self.client.unregister_on_event(on_event)
+        self.client.unregister_on_subscription_applied(on_subscription_applied)
 
         return event_future.result()
     
@@ -95,7 +95,7 @@ class SpacetimeDBAsyncClient:
         self.is_closing = True
         self.current_future = close_future
 
-        self.SpacetimeDBClient.close()
+        self.client.close()
         
         await self._wait_for_future(close_future)
 
@@ -105,7 +105,7 @@ class SpacetimeDBAsyncClient:
         time_spent = 0        
         
         while not future.done():
-            self.SpacetimeDBClient.update()
+            self.client.update()
             await asyncio.sleep(0.1)  # Sleep for 100 ms.
             time_spent += 0.1
             if time_spent > self.request_timeout:
