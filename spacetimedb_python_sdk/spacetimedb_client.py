@@ -291,11 +291,11 @@ class SpacetimeDBClient:
         }
 
         json_data = json.dumps(message)
-        print("_reducer_call(JSON): " + json_data)
+        #print("_reducer_call(JSON): " + json_data)
         self.wsc.send(bytes(f'{{"call": {json_data}}}', "ascii"))    
 
     def _on_message(self, data):
-        print("_on_message data: " + data)
+        #print("_on_message data: " + data)
         message = json.loads(data)
         if "IdentityToken" in message:
             # is this safe to do in the message thread?
@@ -396,7 +396,6 @@ class SpacetimeDBClient:
                             args = decode_func(next_message.args)
                         
                         for reducer_callback in self._reducer_callbacks[next_message.reducer]:
-                            print("Calling reducer callback")
                             reducer_callback(
                                 next_message.caller_identity,
                                 next_message.status,
