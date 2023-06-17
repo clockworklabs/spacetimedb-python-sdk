@@ -20,7 +20,7 @@ class WebSocketClient:
 
     def connect(self, auth, host, name_or_address, ssl_enabled):
         protocol = "wss" if ssl_enabled else "ws"
-        url = f"{protocol}://{host}/database/subscribe?name_or_address={name_or_address}"
+        url = f"{protocol}://{host}/database/subscribe/{name_or_address}"
 
         self.host = host
         self.name_or_address = name_or_address

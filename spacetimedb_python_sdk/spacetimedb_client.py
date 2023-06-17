@@ -101,18 +101,16 @@ class SpacetimeDBClient:
         Example:
             SpacetimeDBClient.init(autogen, on_connect=self.on_connect)
         """
-        cls.instance = SpacetimeDBClient(auth_token, host, address_or_name, ssl_enabled, autogen_package, on_connect, on_disconnect, on_identity, on_error)
+        client = SpacetimeDBClient(autogen_package)
+        client.connect(auth_token, host, address_or_name, ssl_enabled, on_connect, on_disconnect, on_identity, on_error)
     
     # Do not call this directly. Use init to instantiate the instance.    
-    def __init__(self, auth_token, host, address_or_name, ssl_enabled, autogen_package, on_connect, on_disconnect, on_identity, on_error):
-        self._on_connect = on_connect
-        self._on_disconnect = on_disconnect
-        self._on_identity = on_identity
-        self._on_error = on_error
+    def __init__(self, autogen_package):
+        SpacetimeDBClient.instance = self
 
         self._row_update_callbacks = {}
         self._reducer_callbacks = {}
-        self._on_transaction_callback = []
+        self._on_subscription_applied = []
         self._on_event = []
 
         self.identity = None        
@@ -120,17 +118,23 @@ class SpacetimeDBClient:
         self.client_cache = ClientCache(autogen_package)
         self.message_queue = queue.Queue()
 
-        self.processed_message_queue = queue.Queue()
+        self.processed_message_queue = queue.Queue()        
 
+    def connect(self, auth_token, host, address_or_name, ssl_enabled, on_connect, on_disconnect, on_identity, on_error):
+        self._on_connect = on_connect
+        self._on_disconnect = on_disconnect
+        self._on_identity = on_identity
+        self._on_error = on_error
+    
         self.wsc = WebSocketClient(
-            "v1.text.spacetimedb", on_connect=on_connect, on_message=self._on_message
+            "v1.text.spacetimedb", on_connect=on_connect, on_error=on_error, on_close=on_disconnect, on_message=self._on_message
         )
         self.wsc.connect(
             auth_token,
             host,
             address_or_name,
             ssl_enabled,    
-        )
+        )       
             
     def update(self):
         """
@@ -181,24 +185,41 @@ class SpacetimeDBClient:
             bytes(f'{{"subscribe": {{ "query_strings": {json_data}}}}}', "ascii")
         )
 
-    def register_on_transaction(self, callback: Callable[[], None]):
+    def register_on_subscription_applied(self, callback: Callable[[], None]):
         """
-        Register a callback function to be executed on each transaction.
+        Register a callback function to be executed when the local cache is updated as a result of a change to the subscription queries.
 
         Args:
-            callback (Callable[[], None]): A callback function that will be invoked on each transaction.
+            callback (Callable[[], None]): A callback function that will be invoked on each subscription update.
                 The callback function should not accept any arguments and should not return any value.
 
         Example:
-            def transaction_callback():
-                # Code to be executed on each transaction
+            def subscription_callback():
+                # Code to be executed on each subscription update
 
-            SpacetimeDBClient.instance.register_on_transaction(transaction_callback)
+            SpacetimeDBClient.instance.register_on_subscription_applied(subscription_callback)
         """
-        if self._on_transaction_callback is None:
-            self._on_transaction_callback = []
+        if self._on_subscription_applied is None:
+            self._on_subscription_applied = []
 
-        self._on_transaction_callback.append(callback)
+        self._on_subscription_applied.append(callback)
+
+    def unregister_on_subscription_applied(self, callback: Callable[[], None]):
+        """
+        Unregister a callback function from the subscription update event.
+
+        Args:
+            callback (Callable[[], None]): A callback function that was previously registered with the `register_on_subscription_applied` function.
+
+        Example:
+            def subscription_callback():
+                # Code to be executed on each subscription update
+
+            SpacetimeDBClient.instance.register_on_subscription_applied(subscription_callback)
+            SpacetimeDBClient.instance.unregister_on_subscription_applied(subscription_callback)
+        """
+        if self._on_subscription_applied is not None:
+            self._on_subscription_applied.remove(callback)
 
     def register_on_event(self, callback: Callable[[TransactionUpdateMessage], None]):
         """
@@ -224,6 +245,19 @@ class SpacetimeDBClient:
 
         self._on_event.append(callback)
 
+    def unregister_on_event(self, callback: Callable[[TransactionUpdateMessage], None]):
+        """
+        Unregister a callback function that was previously registered using `register_on_event`.
+
+        Args:
+            callback (Callable[[TransactionUpdateMessage], None]): The callback function to unregister.
+
+        Example:            
+            SpacetimeDBClient.instance.unregister_on_event(handle_event)
+        """
+        if self._on_event is not None:            
+            self._on_event.remove(callback)
+
     def _get_table_cache(self, table_name: str):
         return self.client_cache.get_table_cache(table_name)
 
@@ -233,11 +267,19 @@ class SpacetimeDBClient:
 
         self._row_update_callbacks[table_name].append(callback)
 
+    def _unregister_row_update(self, table_name: str, callback: Callable[[str,object,object], None]):
+        if table_name in self._row_update_callbacks:
+            self._row_update_callbacks[table_name].remove(callback)
+
     def _register_reducer(self, reducer_name, callback):
         if reducer_name not in self._reducer_callbacks:
             self._reducer_callbacks[reducer_name] = []
 
         self._reducer_callbacks[reducer_name].append(callback)
+
+    def _unregister_reducer(self, reducer_name, callback):
+        if reducer_name in self._reducer_callbacks:
+            self._reducer_callbacks[reducer_name].remove(callback)
 
     def _reducer_call(self, reducer, *args):
         if not self.wsc.is_connected:
@@ -249,9 +291,11 @@ class SpacetimeDBClient:
         }
 
         json_data = json.dumps(message)
+        #print("_reducer_call(JSON): " + json_data)
         self.wsc.send(bytes(f'{{"call": {json_data}}}', "ascii"))    
 
     def _on_message(self, data):
+        #print("_on_message data: " + data)
         message = json.loads(data)
         if "IdentityToken" in message:
             # is this safe to do in the message thread?
@@ -268,7 +312,7 @@ class SpacetimeDBClient:
                 Spacetime_message = message["TransactionUpdate"]
                 # DAB Todo: We need reducer codegen to parse the args
                 clientapi_message = TransactionUpdateMessage(
-                    Spacetime_message["event"]["caller_identity"],
+                    bytes.fromhex(Spacetime_message["event"]["caller_identity"]),
                     Spacetime_message["event"]["status"],
                     Spacetime_message["event"]["message"],
                     Spacetime_message["event"]["function_call"]["reducer"],
@@ -334,24 +378,28 @@ class SpacetimeDBClient:
                                 db_event.decoded_value,
                             )
 
-                if next_message.transaction_type == "SubscriptionUpdate" or next_message.transaction_type == "TransactionUpdate":
+                if next_message.transaction_type == "SubscriptionUpdate":
                     # call ontransaction callback
-                    for on_transaction_callback in self._on_transaction_callback:
-                        on_transaction_callback()
+                    for on_subscription_applied in self._on_subscription_applied:
+                        on_subscription_applied()
 
-                if next_message.transaction_type == "TransactionUpdate":
+                if next_message.transaction_type == "TransactionUpdate":                    
                     # call on event callback
                     for event_callback in self._on_event:
                         event_callback(next_message)
 
                     # call reducer callback
                     if next_message.reducer in self._reducer_callbacks:
+                        args = []
                         decode_func = self.client_cache.reducer_cache[next_message.reducer]
+                        if next_message.status == "committed":
+                            args = decode_func(next_message.args)
+                        
                         for reducer_callback in self._reducer_callbacks[next_message.reducer]:
                             reducer_callback(
-                                bytes.fromhex(next_message.caller_identity),
+                                next_message.caller_identity,
                                 next_message.status,
                                 next_message.message,
-                                *decode_func(next_message.args)
+                                *args
                             )        
 
