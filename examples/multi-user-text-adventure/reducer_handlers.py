@@ -1,7 +1,7 @@
 from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 from helpers import *
 from console_window import ConsoleWindow
-from autogen import create_player_reducer, go_reducer, sign_in_reducer, sign_out_reducer, say_reducer
+from autogen import create_player_reducer, go_reducer, sign_in_reducer, sign_out_reducer, say_reducer, tell_reducer
 
 _game_controller = None
 
@@ -14,6 +14,7 @@ def register(game_controller):
     sign_in_reducer.register_on_sign_in(on_sign_in)
     sign_out_reducer.register_on_sign_out(on_sign_out)
     go_reducer.register_on_go(on_go)
+    tell_reducer.register_on_tell(on_tell)
 
 def on_say(caller: bytes, status: str, message: str, source_spawnable_entity_id: int, chat_text: str): 
     if status == "committed":
@@ -28,6 +29,12 @@ def on_say(caller: bytes, status: str, message: str, source_spawnable_entity_id:
 
             ConsoleWindow.instance.prompt()
 
+def on_tell(caller: bytes, status: str, message: str, source_spawnable_entity_id: int = None, target_spawnable_entity_id: int = None, chat_text: str = None): 
+    if status == "committed" and target_spawnable_entity_id == get_local_player_entity_id():
+        source_name = get_name(source_spawnable_entity_id)
+        ConsoleWindow.instance.print("{} tells you \"{}\".\n".format(source_name, chat_text))
+        ConsoleWindow.instance.prompt()
+
 def on_create_player(caller: bytes, status: str, message: str, name: str, description: str): 
     if status == "committed" and SpacetimeDBClient.instance.identity != caller:
         local_room_id = get_local_player_room_id()
@@ -35,7 +42,7 @@ def on_create_player(caller: bytes, status: str, message: str, name: str, descri
         source_location = Location.filter_by_spawnable_entity_id(source_player.spawnable_entity_id)
         if(local_room_id == source_location.room_id):
             source_name = get_name(source_player.spawnable_entity_id)    
-            ConsoleWindow.instance.print("{} has entered the game.\n")
+            ConsoleWindow.instance.print("{} has entered the game.\n".format(source_name))
             ConsoleWindow.instance.prompt()
 
 def on_sign_in(caller: bytes, status: str, message: str, player_spawnable_entity_id: int):
@@ -44,7 +51,7 @@ def on_sign_in(caller: bytes, status: str, message: str, player_spawnable_entity
         source_location = Location.filter_by_spawnable_entity_id(player_spawnable_entity_id)
         if(local_room_id == source_location.room_id):
             source_name = get_name(player_spawnable_entity_id)    
-            ConsoleWindow.instance.print("{} has entered the game.\n")
+            ConsoleWindow.instance.print("{} has entered the game.\n".format(source_name))
             ConsoleWindow.instance.prompt()
 
 def on_sign_out(caller: bytes, status: str, message: str, player_spawnable_entity_id: int):
@@ -53,7 +60,7 @@ def on_sign_out(caller: bytes, status: str, message: str, player_spawnable_entit
         source_location = Location.filter_by_spawnable_entity_id(player_spawnable_entity_id)
         if(local_room_id == source_location.last_room_id):
             source_name = get_name(player_spawnable_entity_id)    
-            ConsoleWindow.instance.print("{} has left the game.\n")    
+            ConsoleWindow.instance.print("{} has left the game.\n".format(source_name))    
             ConsoleWindow.instance.prompt()
 
 def on_go(caller: bytes, status: str, message: str, source_spawnable_entity_id: int, exit_direction: str):    

@@ -31,8 +31,8 @@ class GameController:
 
     def __init__(self):
         auth_token = game_config.get_string("auth")
-        SpacetimeDBClient.init(auth_token, "localhost:3000", "examplemud", False, autogen, on_connect=self.on_connect, on_identity=self.on_identity)
-        SpacetimeDBClient.instance.register_on_transaction(self.on_transaction)
+        SpacetimeDBClient.init(auth_token, "localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect, on_identity=self.on_identity)
+        SpacetimeDBClient.instance.register_on_subscription_applied(self.on_subscription_applied)
 
         reducer_handlers.register(self)
 
@@ -73,7 +73,7 @@ class GameController:
         game_config.set_string("auth", auth_token)
         self.local_identity = SpacetimeDBClient.instance.identity
 
-    def on_transaction(self):
+    def on_subscription_applied(self):
         if not self.initialized:            
             self.initialized = True  
 
@@ -85,7 +85,8 @@ class GameController:
              "SELECT * FROM World",
              "SELECT * FROM Zone",
              "SELECT * FROM Room",
-             "SELECT * FROM RoomChat"])
+             "SELECT * FROM RoomChat",
+             "SELECT * FROM DirectMessage"])
 
     def exit(self):        
         SpacetimeDBClient.instance.close()

@@ -1,4 +1,4 @@
-use spacetimedb::{spacetimedb, Identity, SpacetimeType};
+use spacetimedb::{spacetimedb, Identity, SpacetimeType, Timestamp};
 
 #[spacetimedb(table)]
 #[derive(Debug, Clone)]
@@ -82,7 +82,19 @@ pub struct RoomChat {
     pub room_id: String,
     pub source_spawnable_entity_id: u64,
     pub chat_text: String,
-    pub timestamp: u64,
+    pub timestamp: Timestamp,
+}
+
+#[spacetimedb(table)]
+pub struct DirectMessage {
+    #[unique]
+    #[autoinc]
+    pub whisper_entity_id: u64,
+
+    pub source_spawnable_entity_id: u64,
+    pub target_spawnable_entity_id: u64,
+    pub chat_text: String,
+    pub timestamp: Timestamp,
 }
 
 #[derive(SpacetimeType, Clone)]

@@ -4,8 +4,8 @@ pub mod tables;
 use std::time::Duration;
 
 use helpers::next_spawnable_entity_id;
-use spacetimedb::{schedule, spacetimedb, ReducerContext, Timestamp};
-use tables::{Exit, Globals, Location, Mobile, Player, Room, RoomChat, World, Zone};
+use spacetimedb::{schedule, spacetimedb, ReducerContext};
+use tables::{DirectMessage, Exit, Globals, Location, Mobile, Player, Room, RoomChat, World, Zone};
 
 #[spacetimedb(init)]
 pub fn initialize() {
@@ -124,11 +124,7 @@ pub fn say(
                 source_spawnable_entity_id,
                 chat_text,
 
-                timestamp: ctx
-                    .timestamp
-                    .duration_since(Timestamp::UNIX_EPOCH)
-                    .unwrap()
-                    .as_millis() as u64,
+                timestamp: ctx.timestamp,
             })
             .unwrap();
         } else {
@@ -137,6 +133,39 @@ pub fn say(
     } else {
         return Err("No mobile found.".into());
     }
+
+    Ok(())
+}
+
+#[spacetimedb(reducer)]
+pub fn tell(
+    ctx: ReducerContext,
+    source_spawnable_entity_id: u64,
+    target_spawnable_entity_id: u64,
+    chat_text: String,
+) -> Result<(), String> {
+    let source_mobile = Mobile::filter_by_spawnable_entity_id(&source_spawnable_entity_id);
+    let target_mobile = Mobile::filter_by_spawnable_entity_id(&target_spawnable_entity_id);
+
+    if source_mobile.is_none() || target_mobile.is_none() {
+        return Err("Target not found.".into());
+    }
+
+    let target_location = Location::filter_by_spawnable_entity_id(&target_spawnable_entity_id);
+    if target_location.is_none() || target_location.unwrap().room_id.is_none() {
+        return Err("Target not found.".into());
+    }
+
+    DirectMessage::insert(DirectMessage {
+        whisper_entity_id: 0,
+
+        source_spawnable_entity_id,
+        target_spawnable_entity_id,
+        chat_text,
+
+        timestamp: ctx.timestamp,
+    })
+    .unwrap();
 
     Ok(())
 }

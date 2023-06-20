@@ -9,9 +9,6 @@ __pycache__/
 venv/
 *.venv/
 
-# spacetime sdk config
-.pythonsdk/
-
 # dist folder
 /dist/
 /spacetimedb_python_sdk.egg-info/

@@ -1,6 +1,6 @@
 from helpers import *
 from console_window import ConsoleWindow
-from autogen import say_reducer
+from autogen import say_reducer, tell_reducer
 from autogen import go_reducer
 
 import openai_harness
@@ -79,6 +79,22 @@ class GamePrompt():
             prefix = "say " if line.lower().startswith("say ") else "'"
             message = line[len(prefix):]
             say_reducer.say(get_local_player_entity_id(), message)
+        elif line.lower().startswith("tell "):
+            prefix = "tell "
+            target_name = line[len(prefix):].split(" ")[0]
+            message = line[line.find(target_name) + len(target_name) + 1:]
+            matches = list(filter(lambda m: m.name.startswith(target_name), Mobile.iter()))
+            if len(matches) != 1:
+                if len(matches) == 0:
+                    ConsoleWindow.instance.print(f"{target_name} is not online.\n")
+                else:            
+                    ConsoleWindow.instance.print(f"Which {target_name} do you mean?\n")
+                ConsoleWindow.instance.prompt()
+                return
+            else:
+                ConsoleWindow.instance.print(f"You tell {matches[0].name} \"{message}\"\n")
+                ConsoleWindow.instance.prompt()
+                tell_reducer.tell(get_local_player_entity_id(), matches[0].spawnable_entity_id, message)
         elif line.lower() in exits_strs:
             index = exits_strs.index(line.lower())
             self.do_go(room.exits[index])

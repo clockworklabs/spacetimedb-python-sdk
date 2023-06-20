@@ -1,11 +1,18 @@
 import os
 import configparser
+import sys
 
 # Get the path to the user's home directory
 home_dir = os.path.expanduser("~")
 
 # Create a path to the settings file in the user's home directory
-settings_path = os.path.join(home_dir, ".spacetime_mud", "settings.ini")
+settings_file = "settings.ini"
+if "--client" in sys.argv:
+    client_index = sys.argv.index("--client")
+    print("Using settings file: {}".format(sys.argv[client_index + 1]))
+    settings_file = "settings_{}.ini".format(sys.argv[client_index + 1])
+
+settings_path = os.path.join(home_dir, ".spacetime_mud", settings_file)
 
 # Create a ConfigParser object and read the settings file (if it exists)
 config = configparser.ConfigParser()
