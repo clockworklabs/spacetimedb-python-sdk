@@ -19,156 +19,159 @@ class SpacetimeDBScheduledEvent():
 class SpacetimeDBAsyncClient:
     request_timeout = 5
 
-    current_future = None
+    is_connected = False
     is_closing = False
-    identity = None          
+    identity = None
 
-    scheduled_events = []
-    scheduled_event_task = None
-
-    def __init__(self, autogen_package):
+    def __init__(self, autogen_package):        
         self.client = SpacetimeDBClient(autogen_package)
+        self.prescheduled_events = []
+        self.event_queue = None    
 
     def schedule_event(self, delay_secs, callback, *args):
-        # convert the delay to a datetime
-        fire_time = datetime.now() + timedelta(seconds=delay_secs)
-        scheduled_event = SpacetimeDBScheduledEvent(fire_time, callback, args)
+        # if this is called before we start the async loop, we need to store the event
+        if self.event_queue is None:
+            self.prescheduled_events.append((delay_secs, callback, args))
+        else:
+            # convert the delay to a datetime
+            fire_time = datetime.now() + timedelta(seconds=delay_secs)
+            scheduled_event = SpacetimeDBScheduledEvent(fire_time, callback, args)
+            
+            # create async task
+            def on_scheduled_event():
+                self.event_queue.put_nowait(("scheduled_event", scheduled_event))
+                scheduled_event.callback(*scheduled_event.args)
 
-        # if we are listening for events and this event is sooner than the next event, cancel the current event and create a new one
-        if self.current_future is not None and not self.current_future.done():
-            # if we have an event scheduled and this one is sooner, cancel the current event
-            if(self.scheduled_event_task is not None and self.scheduled_events[0].fire_time > fire_time):
-                self.scheduled_event_task.cancel()
-
-            # schedule our new one    
-            self._create_scheduled_event_task(scheduled_event)
+            async def wait_for_delay():
+                await asyncio.sleep((scheduled_event.fire_time - datetime.now()).total_seconds())
+                on_scheduled_event()
+            
+            asyncio.create_task(wait_for_delay())
         
-        self.scheduled_events.append(scheduled_event)
-
-        # sort scheduled events in order of fire time ascending
-        self.scheduled_events.sort(key=lambda x: x.fire_time)
-
     def force_close(self):
-        self.is_closing = True
-        if self.current_future:
-            self.current_future.set_result(("force_close",None))
+        self.is_closing = True        
 
-    def _create_scheduled_event_task(self, scheduled_event):     
-        def on_scheduled_event():
-            self.current_future.set_result(("scheduled_event",scheduled_event))
-            scheduled_event.callback(*scheduled_event.args)
-            self.scheduled_events.remove(scheduled_event)                            
-            self.scheduled_event_task = None
+        # TODO Cancel all scheduled event tasks
 
-        async def wait_for_delay():
-            await asyncio.sleep((scheduled_event.fire_time - datetime.now()).total_seconds())
-            on_scheduled_event()
-        self.scheduled_event_task = asyncio.create_task(wait_for_delay())
+        self.event_queue.put_nowait(("force_close", None))
 
     async def run(self, auth_token, host, address_or_name, ssl_enabled, on_connect, subscription_queries=[]):
+        if not self.event_queue:
+            self._on_async_loop_start()
+
         identity_result = await self.connect(auth_token, host, address_or_name, ssl_enabled, subscription_queries)
 
         if on_connect is not None:
             on_connect(identity_result[0],identity_result[1])
 
-        while not self.is_closing:
-            await self.event()
+        def on_subscription_applied(self):
+            self.event_queue.put_nowait(("subscription_applied", None))
 
-        await self.close() 
-    
-    async def connect(self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]):
-        identity_future = asyncio.get_running_loop().create_future()
+        def on_event(self, event):
+            self.event_queue.put_nowait(("reducer_transaction", event))
 
-        def on_error(error):
-            #print(f"Request Error: {error}")
-            self.current_future.set_exception(SpacetimeDBException(error))
-        
-        def on_disconnect(close_msg):
-            if self.is_closing:
-                self.current_future.set_result(close_msg)
-            else:
-                #print(f"Disconnected: {close_msg}")
-                self.current_future.set_exception(SpacetimeDBException(close_msg))
-
-        def on_identity_received(auth_token, identity):
-            #print(f"Identity Recieved")
-            self.identity = identity            
-            self.client.subscribe(subscription_queries)
-            identity_future.set_result((auth_token, identity))
-
-        #print("Connecting...")
-        self.current_future = identity_future
-        self.client.connect(auth_token, host, address_or_name, ssl_enabled, on_connect=None, on_error=on_error, on_disconnect=on_disconnect, on_identity=on_identity_received)
-
-        await self._wait_for_future(identity_future, self.request_timeout)
-
-        return identity_future.result()
-
-    async def call_reducer(self, reducer_name, *reducer_args):
-        reducer_future = asyncio.get_running_loop().create_future()
-
-        def on_reducer_result(event):
-            if(event.reducer == reducer_name and event.caller_identity == self.identity):
-                reducer_future.set_result(event)
-
-        self.current_future = reducer_future
-        self.client.register_on_event(on_reducer_result)
-        self.client._reducer_call(reducer_name, *reducer_args)
-
-        await self._wait_for_future(reducer_future, self.request_timeout)
-
-        return reducer_future.result()
-    
-    # format is (time_to_fire, callback, args)
-    scheduled_events = []
-
-    async def event(self):
-        event_future = asyncio.get_running_loop().create_future()
-
-        def on_subscription_applied():
-            event_future.set_result(("subscription_applied"))
-
-        def on_event(event):
-            event_future.set_result(("reducer_transaction",event))
-
-        self.current_future = event_future
         self.client.register_on_event(on_event)
         self.client.register_on_subscription_applied(on_subscription_applied)
 
-        if len(self.scheduled_events) > 0:
-            self._create_scheduled_event_task(self.scheduled_events[0])
+        while not self.is_closing:
+            event, payload = await self._event()
+            if event == 'disconnected':
+                if self.is_closing:
+                    return payload
+                else:
+                    raise payload
+            elif event == 'error':
+                raise payload
+            elif event == 'force_close':
+                break            
 
-        await self._wait_for_future(event_future)
+        await self.close() 
 
-        self.current_future = None
+    async def connect(self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]):
+        if not self.event_queue:
+            self._on_async_loop_start()
 
-        if self.scheduled_event_task is not None:
-            self.scheduled_event_task.cancel()
-            self.scheduled_event_task = None
+        def on_error(error):
+            self.event_queue.put_nowait(('error', SpacetimeDBException(error)))
 
-        self.client.unregister_on_event(on_event)
-        self.client.unregister_on_subscription_applied(on_subscription_applied)
+        def on_disconnect(close_msg):
+            if self.is_closing:
+                self.event_queue.put_nowait(('disconnected', close_msg))
+            else:
+                self.event_queue.put_nowait(('error', SpacetimeDBException(close_msg)))
 
-        return event_future.result()
-    
+        def on_identity_received(auth_token, identity):
+            self.identity = identity            
+            self.client.subscribe(subscription_queries)
+            self.event_queue.put_nowait(('connected', (auth_token, identity)))
+
+        self.client.connect(auth_token, host, address_or_name, ssl_enabled, on_connect=None, 
+                            on_error=on_error, 
+                            on_disconnect=on_disconnect, 
+                            on_identity=on_identity_received)
+
+        while True:
+            event, payload = await self._event()
+            if event == 'error':
+                raise payload
+            elif event == 'connected':
+                self.is_connected = True
+                return payload
+
+    async def call_reducer(self, reducer_name, *reducer_args):
+        def on_reducer_result(event):
+            if(event.reducer == reducer_name and event.caller_identity == self.identity):
+                self.event_queue.put_nowait(("reducer_result", event))
+
+        self.client.register_on_event(on_reducer_result)
+
+        timeout_task = asyncio.create_task(self._timeout_task(self.request_timeout))
+
+        self.client._reducer_call(reducer_name, *reducer_args)
+
+        while True:
+            event, payload = await self._event()
+            if event == 'reducer_result':
+                if not timeout_task.done():
+                    timeout_task.cancel()
+                return payload
+            elif event == "timeout":
+                raise SpacetimeDBException("Reducer call timed out.")
+
     async def close(self):
-        close_future = asyncio.get_running_loop().create_future()
-
         self.is_closing = True
-        self.current_future = close_future
+
+        timeout_task = asyncio.create_task(self._timeout_task(self.request_timeout))
 
         self.client.close()
         
-        await self._wait_for_future(close_future, self.request_timeout)
+        while True:
+            event, payload = await self._event()
+            if event == 'disconnected':
+                if not timeout_task.done():
+                    timeout_task.cancel()
+                break
+            elif event == "timeout":
+                raise SpacetimeDBException("Close time out.")
 
-        return close_future.result()
+    def _on_async_loop_start(self):
+        self.event_queue = asyncio.Queue()
+        for event in self.prescheduled_events:
+            self.schedule_event(event[0],event[1],*event[2])    
 
-    async def _wait_for_future(self, future, timeout=None):
-        time_spent = 0        
-        
-        while not future.done():
+    async def _timeout_task(self, timeout):
+        await asyncio.sleep(timeout)
+        self.event_queue.put_nowait(('timeout',))
+
+    async def _event(self):
+        update_task = asyncio.create_task(self._periodic_update())
+        try:
+            result = await self.event_queue.get()
+            return result
+        finally:
+            update_task.cancel()
+
+    async def _periodic_update(self):
+        while True:
             self.client.update()
-            await asyncio.sleep(0.1)  # Sleep for 100 ms.
-            time_spent += 0.1
-            if timeout is not None and time_spent > timeout:
-                raise TimeoutError("Request timed out.")
+            await asyncio.sleep(0.1)
