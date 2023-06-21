@@ -18,6 +18,10 @@ class UserChat:
 		return SpacetimeDBClient.instance._get_table_cache("UserChat").values()
 
 	@classmethod
+	def filter_by_chat_entity_id(cls, chat_entity_id) -> List[UserChat]:
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("UserChat").values() if column_value.chat_entity_id == chat_entity_id]
+
+	@classmethod
 	def filter_by_owner_id(cls, owner_id) -> List[UserChat]:
 		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("UserChat").values() if column_value.owner_id == owner_id]
 
@@ -27,11 +31,12 @@ class UserChat:
 
 	def __init__(self, data: List[object]):
 		self.data = {}
-		self.data["owner_id"] = bytes.fromhex(data[0])
-		self.data["chat"] = str(data[1])
+		self.data["chat_entity_id"] = int(data[0])
+		self.data["owner_id"] = bytes.fromhex(data[1])
+		self.data["chat"] = str(data[2])
 
 	def encode(self) -> List[object]:
-		return [self.owner_id, self.chat]
+		return [self.chat_entity_id, self.owner_id, self.chat]
 
 	def __getattr__(self, name: str):
 		return self.data.get(name)

@@ -64,10 +64,10 @@ class SpacetimeDBAsyncClient:
         if on_connect is not None:
             on_connect(identity_result[0],identity_result[1])
 
-        def on_subscription_applied(self):
+        def on_subscription_applied():
             self.event_queue.put_nowait(("subscription_applied", None))
 
-        def on_event(self, event):
+        def on_event(event):
             self.event_queue.put_nowait(("reducer_transaction", event))
 
         self.client.register_on_event(on_event)
@@ -167,9 +167,11 @@ class SpacetimeDBAsyncClient:
         update_task = asyncio.create_task(self._periodic_update())
         try:
             result = await self.event_queue.get()
-            return result
-        finally:
             update_task.cancel()
+            return result
+        except Exception as e:
+            update_task.cancel()
+            raise e        
 
     async def _periodic_update(self):
         while True:

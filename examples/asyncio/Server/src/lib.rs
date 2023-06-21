@@ -8,6 +8,9 @@ pub struct User {
 
 #[spacetimedb(table)]
 pub struct UserChat {
+    #[autoinc]
+    pub chat_entity_id: u64,
+
     pub owner_id: Identity,
     pub chat: String,
 }
@@ -22,6 +25,11 @@ pub fn create_user(ctx: ReducerContext) {
 
 #[spacetimedb(reducer)]
 pub fn user_chat(ctx: ReducerContext, chat: String) {
+    log::info!("user_chat {}", chat);
     let owner_id = ctx.sender;
-    UserChat::insert(UserChat { owner_id, chat });
+    UserChat::insert(UserChat {
+        chat_entity_id: 0,
+        owner_id,
+        chat,
+    });
 }
