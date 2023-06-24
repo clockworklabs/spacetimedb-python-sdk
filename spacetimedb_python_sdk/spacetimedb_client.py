@@ -30,10 +30,10 @@ class _ClientApiMessage:
     """
     def __init__(self, transaction_type):
         self.transaction_type = transaction_type
-        self.events = []
+        self.events = {}
 
-    def append_event(self, event):
-        self.events.append(event)
+    def append_event(self, table_name, event):
+        self.events.setdefault(table_name, []).append(event)
 
 class _IdentityReceivedMessage(_ClientApiMessage):
     """
@@ -309,21 +309,20 @@ class SpacetimeDBClient:
                 clientapi_message = _SubscriptionUpdateMessage()
                 table_updates = message["SubscriptionUpdate"]["table_updates"]
             if "TransactionUpdate" in message:
-                Spacetime_message = message["TransactionUpdate"]
+                spacetime_message = message["TransactionUpdate"]
                 # DAB Todo: We need reducer codegen to parse the args
                 clientapi_message = TransactionUpdateMessage(
-                    bytes.fromhex(Spacetime_message["event"]["caller_identity"]),
-                    Spacetime_message["event"]["status"],
-                    Spacetime_message["event"]["message"],
-                    Spacetime_message["event"]["function_call"]["reducer"],
-                    json.loads(Spacetime_message["event"]["function_call"]["args"]),
+                    bytes.fromhex(spacetime_message["event"]["caller_identity"]),
+                    spacetime_message["event"]["status"],
+                    spacetime_message["event"]["message"],
+                    spacetime_message["event"]["function_call"]["reducer"],
+                    json.loads(spacetime_message["event"]["function_call"]["args"]),
                 )
-                table_updates = message["TransactionUpdate"]["subscription_update"][
-                    "table_updates"
-                ]
+                table_updates = message["TransactionUpdate"]["subscription_update"]["table_updates"]
 
             for table_update in table_updates:
                 table_name = table_update["table_name"]
+        
                 for table_row_op in table_update["table_row_operations"]:
                     row_op = table_row_op["op"]
                     if row_op == "insert":
@@ -331,6 +330,7 @@ class SpacetimeDBClient:
                             table_name, table_row_op["row"]
                         )
                         clientapi_message.append_event(
+                            table_name,
                             DbEvent(
                                 table_name,
                                 table_row_op["row_pk"],
@@ -340,6 +340,7 @@ class SpacetimeDBClient:
                         )
                     if row_op == "delete":
                         clientapi_message.append_event(
+                            table_name,
                             DbEvent(table_name, table_row_op["row_pk"], row_op)
                         )
 
@@ -355,28 +356,63 @@ class SpacetimeDBClient:
                     self._on_identity(next_message.auth_token, self.identity)
             else:
                 # apply all the event state before calling callbacks
-                for db_event in next_message.events:
-                    # get the old value for sending callbacks
-                    db_event.old_value = self.client_cache.get_entry(
-                        db_event.table_name, db_event.row_pk
-                    )
-
-                    if db_event.row_op == "insert":
-                        self.client_cache.set_entry_decoded(
-                            db_event.table_name, db_event.row_pk, db_event.decoded_value
+                print("We are here.")
+                for table_name, table_events in next_message.table_events.items():
+                    # first retrieve the old values for all events
+                    for db_event in table_events:
+                        # get the old value for sending callbacks
+                        db_event.old_value = self.client_cache.get_entry(
+                            db_event.table_name, db_event.row_pk
                         )
-                    elif db_event.row_op == "delete":
-                        self.client_cache.delete_entry(db_event.table_name, db_event.row_pk)
+                    
+                    # if this table has a primary key, find table updates by looking for matching insert/delete events
+                    primary_key = getattr(self.client_cache.get_table_cache(table_name).table_class, "primary_key", None)
+                    print(f"Primary key: {primary_key}")
+                    if primary_key is not None:
+                        primary_key_row_ops = {}
+                    
+                        for db_event in table_events:
+                            if db_event.row_op == "insert":
+                                primary_key_value = db_event.decoded_value
+                            else:
+                                primary_key_value = db_event.old_value
+                            
+                            print(f"Primary key value: {primary_key_value}")
 
-                for db_event in next_message.events:
-                    # call row update callback
-                    if db_event.table_name in self._row_update_callbacks:
-                        for row_update_callback in self._row_update_callbacks[db_event.table_name]:
-                            row_update_callback(
-                                db_event.row_op,
-                                db_event.old_value,
-                                db_event.decoded_value,
+                            if primary_key_value in primary_key_row_ops:
+                                other_db_event = primary_key_row_ops[primary_key_value]
+                                if (db_event.row_op == "insert" and other_db_event.row_op == "delete"):
+                                    # this is a row update so we need to replace the insert
+                                    db_event.row_op = "update"
+                                    primary_key_row_ops[primary_key_value] = db_event 
+                                elif(db_event.row_op == "delete" and other_db_event.row_op == "insert"):
+                                    # the insert was the row update so just upgrade it to update
+                                    primary_key_row_ops[primary_key_value].row_op = "update"
+                            else:
+                                primary_key_row_ops[primary_key_value] = db_event                                                    
+
+                        table_events = primary_key_row_ops.values()
+
+                    # now we can apply the events to the cache
+                    for db_event in table_events:
+                        if db_event.row_op == "insert" or db_event.row_op == "update":
+                            self.client_cache.set_entry_decoded(
+                                db_event.table_name, db_event.row_pk, db_event.decoded_value
                             )
+                        elif db_event.row_op == "delete":
+                            self.client_cache.delete_entry(db_event.table_name, db_event.row_pk)
+
+                # now that we have applied the state we can call the callbacks
+                for table_events in next_message.events.values(): 
+                    for db_event in table_events:
+                        # call row update callback
+                        if db_event.table_name in self._row_update_callbacks:
+                            for row_update_callback in self._row_update_callbacks[db_event.table_name]:
+                                row_update_callback(
+                                    db_event.row_op,
+                                    db_event.old_value,
+                                    db_event.decoded_value,
+                                )
 
                 if next_message.transaction_type == "SubscriptionUpdate":
                     # call ontransaction callback

@@ -2,13 +2,14 @@ use spacetimedb::{spacetimedb, Identity, ReducerContext};
 
 #[spacetimedb(table)]
 pub struct User {
-    #[unique]
+    #[primarykey]
     pub owner_id: Identity,
 }
 
 #[spacetimedb(table)]
 pub struct UserChat {
     #[autoinc]
+    #[primarykey]
     pub chat_entity_id: u64,
 
     pub owner_id: Identity,
@@ -31,5 +32,6 @@ pub fn user_chat(ctx: ReducerContext, chat: String) {
         chat_entity_id: 0,
         owner_id,
         chat,
-    });
+    })
+    .unwrap();
 }
