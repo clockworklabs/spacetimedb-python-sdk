@@ -356,8 +356,7 @@ class SpacetimeDBClient:
                     self._on_identity(next_message.auth_token, self.identity)
             else:
                 # apply all the event state before calling callbacks
-                print("We are here.")
-                for table_name, table_events in next_message.table_events.items():
+                for table_name, table_events in next_message.events.items():
                     # first retrieve the old values for all events
                     for db_event in table_events:
                         # get the old value for sending callbacks
@@ -367,18 +366,16 @@ class SpacetimeDBClient:
                     
                     # if this table has a primary key, find table updates by looking for matching insert/delete events
                     primary_key = getattr(self.client_cache.get_table_cache(table_name).table_class, "primary_key", None)
-                    print(f"Primary key: {primary_key}")
+                    #print(f"Primary key: {primary_key}")
                     if primary_key is not None:
                         primary_key_row_ops = {}
                     
                         for db_event in table_events:
                             if db_event.row_op == "insert":
-                                primary_key_value = db_event.decoded_value
+                                primary_key_value = db_event.decoded_value.primary_key
                             else:
-                                primary_key_value = db_event.old_value
+                                primary_key_value = db_event.old_value.primary_key
                             
-                            print(f"Primary key value: {primary_key_value}")
-
                             if primary_key_value in primary_key_row_ops:
                                 other_db_event = primary_key_row_ops[primary_key_value]
                                 if (db_event.row_op == "insert" and other_db_event.row_op == "delete"):
@@ -389,9 +386,10 @@ class SpacetimeDBClient:
                                     # the insert was the row update so just upgrade it to update
                                     primary_key_row_ops[primary_key_value].row_op = "update"
                             else:
-                                primary_key_row_ops[primary_key_value] = db_event                                                    
+                                primary_key_row_ops[primary_key_value] = db_event
 
                         table_events = primary_key_row_ops.values()
+                        next_message.events[table_name] = table_events
 
                     # now we can apply the events to the cache
                     for db_event in table_events:

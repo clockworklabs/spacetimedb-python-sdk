@@ -9,6 +9,8 @@ from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 class UserChat:
 	is_table_class = True
 
+	primary_key = "chat_entity_id"
+
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,UserChat,UserChat], None]):
 		SpacetimeDBClient.instance._register_row_update("UserChat",callback)
@@ -18,8 +20,8 @@ class UserChat:
 		return SpacetimeDBClient.instance._get_table_cache("UserChat").values()
 
 	@classmethod
-	def filter_by_chat_entity_id(cls, chat_entity_id) -> List[UserChat]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("UserChat").values() if column_value.chat_entity_id == chat_entity_id]
+	def filter_by_chat_entity_id(cls, chat_entity_id) -> UserChat:
+		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("UserChat").values() if column_value.chat_entity_id == chat_entity_id]), None)
 
 	@classmethod
 	def filter_by_owner_id(cls, owner_id) -> List[UserChat]:

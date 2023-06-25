@@ -171,9 +171,15 @@ class SpacetimeDBAsyncClient:
             return result
         except Exception as e:
             update_task.cancel()
+            print(f"Exception: {e}")
             raise e        
 
     async def _periodic_update(self):
         while True:
-            self.client.update()
+            try:
+                self.client.update()
+            except Exception as e:
+                print(f"Exception: {e}")
+                self.event_queue.put_nowait(('error', e))
+                return
             await asyncio.sleep(0.1)

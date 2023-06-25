@@ -1,6 +1,14 @@
 use spacetimedb::{spacetimedb, Identity, ReducerContext};
 
 #[spacetimedb(table)]
+pub struct GlobalTable {
+    #[primarykey]
+    pub version: u64,
+
+    pub message_of_the_day: String,
+}
+
+#[spacetimedb(table)]
 pub struct User {
     #[primarykey]
     pub owner_id: Identity,
@@ -14,6 +22,15 @@ pub struct UserChat {
 
     pub owner_id: Identity,
     pub chat: String,
+}
+
+#[spacetimedb(init)]
+pub fn init() {
+    GlobalTable::insert(GlobalTable {
+        version: 0,
+        message_of_the_day: "Welcome to my chat server!".to_string(),
+    })
+    .unwrap();
 }
 
 #[spacetimedb(reducer)]
@@ -34,4 +51,11 @@ pub fn user_chat(ctx: ReducerContext, chat: String) {
         chat,
     })
     .unwrap();
+}
+
+#[spacetimedb(reducer)]
+pub fn update_motd(_ctx: ReducerContext, motd: String) {
+    let mut global = GlobalTable::filter_by_version(&0).unwrap();
+    global.message_of_the_day = motd;
+    GlobalTable::update_by_version(&0, global);
 }
