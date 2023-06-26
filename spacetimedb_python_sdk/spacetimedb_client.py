@@ -132,6 +132,7 @@ class SpacetimeDBClient:
         self.wsc = WebSocketClient(
             "v1.text.spacetimedb", on_connect=on_connect, on_error=on_error, on_close=on_disconnect, on_message=self._on_message
         )
+        print("CONNECTING " + host + " " + address_or_name)
         self.wsc.connect(
             auth_token,
             host,
@@ -384,10 +385,12 @@ class SpacetimeDBClient:
                                 if (db_event.row_op == "insert" and other_db_event.row_op == "delete"):
                                     # this is a row update so we need to replace the insert
                                     db_event.row_op = "update"
+                                    db_event.old_pk = other_db_event.row_pk
                                     primary_key_row_ops[primary_key_value] = db_event 
                                 elif(db_event.row_op == "delete" and other_db_event.row_op == "insert"):
                                     # the insert was the row update so just upgrade it to update
                                     primary_key_row_ops[primary_key_value].row_op = "update"
+                                    primary_key_row_ops[primary_key_value].old_pk = db_event.row_pk
                             else:
                                 primary_key_row_ops[primary_key_value] = db_event
 
@@ -400,6 +403,9 @@ class SpacetimeDBClient:
                             self.client_cache.set_entry_decoded(
                                 db_event.table_name, db_event.row_pk, db_event.decoded_value
                             )
+                            # in the case of updates we need to delete the old entry
+                            if db_event.row_op == "update":
+                                self.client_cache.delete_entry(db_event.table_name, db_event.old_pk)
                         elif db_event.row_op == "delete":
                             self.client_cache.delete_entry(db_event.table_name, db_event.row_pk)
 

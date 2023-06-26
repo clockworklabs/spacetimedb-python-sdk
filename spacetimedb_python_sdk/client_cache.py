@@ -21,6 +21,8 @@ class TableCache:
     def delete_entry(self, key):
         if key in self.entries:
             del self.entries[key]
+        else:
+            print(f"[delete_entry] Error, key not found. ({key})")
 
     def get_entry(self, key):
         if key in self.entries:

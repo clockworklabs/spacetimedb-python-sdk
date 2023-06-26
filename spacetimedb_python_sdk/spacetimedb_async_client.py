@@ -1,4 +1,13 @@
-# Known issues: If two events are processed in the same frame it throws an exception
+""" SpacetimeDB Python SDK AsyncIO Client
+
+This module provides a client interface to your SpacetimeDB module using the asyncio library.
+Essentially, you create your client object, register callbacks, and then start the client
+using asyncio.run().
+
+For details on how to use this module, see the documentation on the SpacetimeDB website and
+the examples in the examples/asyncio directory. 
+
+"""
 
 import asyncio
 from datetime import timedelta
@@ -22,13 +31,31 @@ class SpacetimeDBAsyncClient:
     is_connected = False
     is_closing = False
     identity = None
-
+    
     def __init__(self, autogen_package):        
+        """ 
+        Create a SpacetimeDBAsyncClient object
+
+        Attributes:
+            autogen_package : package folder created by running the generate command from the CLI   
+
+        """
         self.client = SpacetimeDBClient(autogen_package)
         self.prescheduled_events = []
         self.event_queue = None    
 
     def schedule_event(self, delay_secs, callback, *args):
+        """
+        Schedule an event to be fired after a delay
+
+        To create a repeating event, call schedule_event() again from within the callback function.
+
+        Args:
+            delay_secs : number of seconds to wait before firing the event
+            callback : function to call when the event fires
+            args (variable): arguments to pass to the callback function
+        """
+
         # if this is called before we start the async loop, we need to store the event
         if self.event_queue is None:
             self.prescheduled_events.append((delay_secs, callback, args))
@@ -49,6 +76,12 @@ class SpacetimeDBAsyncClient:
             asyncio.create_task(wait_for_delay())
         
     def force_close(self):
+        """
+        Signal the client to stop processing events and close the connection to the server.
+
+        This will cause the client to close even if there are scheduled events that have not fired yet.
+        """
+
         self.is_closing = True        
 
         # TODO Cancel all scheduled event tasks
@@ -56,6 +89,18 @@ class SpacetimeDBAsyncClient:
         self.event_queue.put_nowait(("force_close", None))
 
     async def run(self, auth_token, host, address_or_name, ssl_enabled, on_connect, subscription_queries=[]):
+        """
+        Run the client. This function will not return until the client is closed.
+
+        Args:
+            auth_token : authentication token to use when connecting to the server
+            host : host name or IP address of the server
+            address_or_name : address or name of the module to connect to
+            ssl_enabled : True to use SSL, False to not use SSL
+            on_connect : function to call when the client connects to the server
+            subscription_queries : list of queries to subscribe to
+        """
+
         if not self.event_queue:
             self._on_async_loop_start()
 
@@ -88,6 +133,19 @@ class SpacetimeDBAsyncClient:
         await self.close() 
 
     async def connect(self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]):
+        """
+        Connect to the server.
+
+        NOTE: DO NOT call this function if you are using the run() function. It will connect for you.
+
+        Args:
+            auth_token : authentication token to use when connecting to the server
+            host : host name or IP address of the server
+            address_or_name : address or name of the module to connect to
+            ssl_enabled : True to use SSL, False to not use SSL
+            subscription_queries : list of queries to subscribe to
+        """
+
         if not self.event_queue:
             self._on_async_loop_start()
 
@@ -119,6 +177,18 @@ class SpacetimeDBAsyncClient:
                 return payload
 
     async def call_reducer(self, reducer_name, *reducer_args):
+        """
+        Call a reducer on the async loop. This function will not return until the reducer call completes.
+
+        NOTE: DO NOT call this function if you are using the run() function. You should use the
+        auto-generated reducer functions instead. 
+
+        Args:       
+            reducer_name : name of the reducer to call
+            reducer_args (variable) : arguments to pass to the reducer            
+
+        """
+
         def on_reducer_result(event):
             if(event.reducer == reducer_name and event.caller_identity == self.identity):
                 self.event_queue.put_nowait(("reducer_result", event))
@@ -139,6 +209,11 @@ class SpacetimeDBAsyncClient:
                 raise SpacetimeDBException("Reducer call timed out.")
 
     async def close(self):
+        """
+        Close the client. This function will not return until the client is closed.
+
+        NOTE: DO NOT call this function if you are using the run() function. It will close for you.
+        """
         self.is_closing = True
 
         timeout_task = asyncio.create_task(self._timeout_task(self.request_timeout))

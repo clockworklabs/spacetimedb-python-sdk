@@ -1,5 +1,8 @@
 from enum import Enum
 
+import sys
+sys.path.insert(0, "../..")
+
 from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 
 import autogen
@@ -9,7 +12,7 @@ from autogen.create_player_reducer import create_player
 from console_window import ConsoleWindow
 from create_char_prompt import CreateCharPrompt
 from game_prompt import GamePrompt
-import game_config
+import spacetimedb_python_sdk.local_config as local_config
 from helpers import *
 
 import reducer_handlers
@@ -30,7 +33,8 @@ class GameController:
     game_state = GameState.CONNECTING
 
     def __init__(self):
-        auth_token = game_config.get_string("auth")
+        local_config.init(".spacetime-mud", "settings.ini")
+        auth_token = local_config.get_string("auth")
         SpacetimeDBClient.init(auth_token, "localhost:3000", "example-mud", False, autogen, on_connect=self.on_connect, on_identity=self.on_identity)
         SpacetimeDBClient.instance.register_on_subscription_applied(self.on_subscription_applied)
 
@@ -70,7 +74,7 @@ class GameController:
     
     def on_identity(self, auth_token, identity):
         # save the auth_token for future sessions
-        game_config.set_string("auth", auth_token)
+        local_config.set_string("auth", auth_token)
         self.local_identity = SpacetimeDBClient.instance.identity
 
     def on_subscription_applied(self):
