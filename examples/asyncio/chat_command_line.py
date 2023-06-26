@@ -46,7 +46,7 @@ def on_remote_chat(caller: bytes, status: str, message: str, chat: str = None):
 user_chat_reducer.register_on_user_chat(on_remote_chat)
 
 # print out motd when it changes
-def on_global_table_row_update(row_op, old_value, new_value):
+def on_global_table_row_update(row_op, old_value, new_value, reducer_event):
     if(row_op == "update"):
         print(f"New motd: {new_value.message_of_the_day}\n{chatCmd.prompt}", end="")
 

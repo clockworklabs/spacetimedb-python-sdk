@@ -52,6 +52,13 @@ class _SubscriptionUpdateMessage(_ClientApiMessage):
     def __init__(self):
         super().__init__("SubscriptionUpdate")
 
+class ReducerEvent():
+    def __init__(self, caller_identity, reducer_name, status, message, args):
+        self.caller_identity = caller_identity
+        self.reducer_name = reducer_name
+        self.status = status
+        self.message = message
+        self.args =  args
 
 class TransactionUpdateMessage(_ClientApiMessage):
     """
@@ -67,13 +74,9 @@ class TransactionUpdateMessage(_ClientApiMessage):
         args (dict): Additional arguments for the transaction.
         events (List[DbEvent]): List of DBEvents that were committed.
     """
-    def __init__(self, caller_identity: str, status: str, message: str, reducer: str, args: Dict):
+    def __init__(self, caller_identity: str, status: str, message: str, reducer_name: str, args: Dict):
         super().__init__("TransactionUpdate")
-        self.caller_identity = caller_identity
-        self.status = status
-        self.message = message
-        self.reducer = reducer
-        self.args = args
+        self.reducer_event = ReducerEvent(caller_identity, reducer_name, status, message, args)        
 
 class SpacetimeDBClient:
     """
@@ -261,13 +264,13 @@ class SpacetimeDBClient:
     def _get_table_cache(self, table_name: str):
         return self.client_cache.get_table_cache(table_name)
 
-    def _register_row_update(self, table_name: str, callback: Callable[[str,object,object], None]):
+    def _register_row_update(self, table_name: str, callback: Callable[[str,object,object,ReducerEvent], None]):
         if table_name not in self._row_update_callbacks:
             self._row_update_callbacks[table_name] = []
 
         self._row_update_callbacks[table_name].append(callback)
 
-    def _unregister_row_update(self, table_name: str, callback: Callable[[str,object,object], None]):
+    def _unregister_row_update(self, table_name: str, callback: Callable[[str,object,object,ReducerEvent], None]):
         if table_name in self._row_update_callbacks:
             self._row_update_callbacks[table_name].remove(callback)
 
@@ -405,11 +408,13 @@ class SpacetimeDBClient:
                     for db_event in table_events:
                         # call row update callback
                         if db_event.table_name in self._row_update_callbacks:
+                            reducer_event = next_message.reducer_event if next_message.transaction_type == "TransactionUpdate" else None
                             for row_update_callback in self._row_update_callbacks[db_event.table_name]:
                                 row_update_callback(
                                     db_event.row_op,
                                     db_event.old_value,
                                     db_event.decoded_value,
+                                    reducer_event,
                                 )
 
                 if next_message.transaction_type == "SubscriptionUpdate":
@@ -423,17 +428,18 @@ class SpacetimeDBClient:
                         event_callback(next_message)
 
                     # call reducer callback
-                    if next_message.reducer in self._reducer_callbacks:
+                    reducer_event = next_message.reducer_event
+                    if reducer_event.reducer_name in self._reducer_callbacks:
                         args = []
-                        decode_func = self.client_cache.reducer_cache[next_message.reducer]
-                        if next_message.status == "committed":
-                            args = decode_func(next_message.args)
+                        decode_func = self.client_cache.reducer_cache[reducer_event.reducer_name]
+                        if reducer_event.status == "committed":
+                            args = decode_func(reducer_event.args)
                         
-                        for reducer_callback in self._reducer_callbacks[next_message.reducer]:
+                        for reducer_callback in self._reducer_callbacks[reducer_event.reducer_name]:
                             reducer_callback(
-                                next_message.caller_identity,
-                                next_message.status,
-                                next_message.message,
+                                reducer_event.caller_identity,
+                                reducer_event.status,
+                                reducer_event.message,
                                 *args
                             )        
 
