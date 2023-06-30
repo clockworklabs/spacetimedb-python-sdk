@@ -9,9 +9,6 @@ This pattern is useful for testing reducers on your SpacetimeDB module.
 
 import asyncio
 
-import sys
-sys.path.insert(0, "../../")
-
 from spacetimedb_python_sdk.spacetimedb_async_client import SpacetimeDBAsyncClient
 
 import autogen

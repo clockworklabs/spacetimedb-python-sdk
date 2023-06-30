@@ -1,10 +1,7 @@
 import cmd
 import asyncio
 
-import sys
 import threading
-
-sys.path.insert(0, "../../")
 
 from spacetimedb_python_sdk.spacetimedb_async_client import SpacetimeDBAsyncClient
 

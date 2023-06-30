@@ -11,9 +11,6 @@ do not need control of the main loop.
 import asyncio
 import random
 
-import sys
-sys.path.insert(0, "../../")
-
 from spacetimedb_python_sdk.spacetimedb_async_client import SpacetimeDBAsyncClient
 
 import autogen
