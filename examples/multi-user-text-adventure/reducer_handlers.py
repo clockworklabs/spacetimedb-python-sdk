@@ -1,12 +1,20 @@
 from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 from helpers import *
 from console_window import ConsoleWindow
-from autogen import create_player_reducer, go_reducer, sign_in_reducer, sign_out_reducer, say_reducer, tell_reducer
+from autogen import (
+    create_player_reducer,
+    go_reducer,
+    sign_in_reducer,
+    sign_out_reducer,
+    say_reducer,
+    tell_reducer,
+)
 
 _game_controller = None
 
+
 def register(game_controller):
-    global _game_controller 
+    global _game_controller
     _game_controller = game_controller
 
     say_reducer.register_on_say(on_say)
@@ -14,70 +22,107 @@ def register(game_controller):
     sign_in_reducer.register_on_sign_in(on_sign_in)
     sign_out_reducer.register_on_sign_out(on_sign_out)
     go_reducer.register_on_go(on_go)
-    tell_reducer.register_on_tell(on_tell)
 
-def on_say(caller: bytes, status: str, message: str, source_spawnable_entity_id: int, chat_text: str): 
+
+def on_say(
+    caller: bytes,
+    status: str,
+    message: str,
+    source_spawnable_entity_id: int,
+    chat_text: str,
+):
     if status == "committed":
         local_room_id = get_local_player_room_id()
-        source_location = Location.filter_by_spawnable_entity_id(source_spawnable_entity_id)
-        if(local_room_id == source_location.room_id):
-            if(get_local_player_entity_id() == source_spawnable_entity_id):
-                ConsoleWindow.instance.print("You say \"{}\".\n".format(chat_text))
+        source_location = Location.filter_by_spawnable_entity_id(
+            source_spawnable_entity_id
+        )
+        if local_room_id == source_location.room_id:
+            if get_local_player_entity_id() == source_spawnable_entity_id:
+                ConsoleWindow.instance.print('You say "{}".\n'.format(chat_text))
             else:
-                source_name = get_name(source_spawnable_entity_id)    
-                ConsoleWindow.instance.print("{} says \"{}\".\n".format(source_name,chat_text))
+                source_name = get_name(source_spawnable_entity_id)
+                ConsoleWindow.instance.print(
+                    '{} says "{}".\n'.format(source_name, chat_text)
+                )
 
             ConsoleWindow.instance.prompt()
 
-def on_tell(caller: bytes, status: str, message: str, source_spawnable_entity_id: int = None, target_spawnable_entity_id: int = None, chat_text: str = None): 
-    if status == "committed" and target_spawnable_entity_id == get_local_player_entity_id():
-        source_name = get_name(source_spawnable_entity_id)
-        ConsoleWindow.instance.print("{} tells you \"{}\".\n".format(source_name, chat_text))
-        ConsoleWindow.instance.prompt()
 
-def on_create_player(caller: bytes, status: str, message: str, name: str, description: str): 
+def on_create_player(caller: bytes, status: str, message: str, name: str):
     if status == "committed" and SpacetimeDBClient.instance.identity != caller:
         local_room_id = get_local_player_room_id()
         source_player = Player.filter_by_identity(caller)
-        source_location = Location.filter_by_spawnable_entity_id(source_player.spawnable_entity_id)
-        if(local_room_id == source_location.room_id):
-            source_name = get_name(source_player.spawnable_entity_id)    
-            ConsoleWindow.instance.print("{} has entered the game.\n".format(source_name))
+        source_location = Location.filter_by_spawnable_entity_id(
+            source_player.spawnable_entity_id
+        )
+        if local_room_id == source_location.room_id:
+            source_name = get_name(source_player.spawnable_entity_id)
+            ConsoleWindow.instance.print(
+                "{} has entered the game.\n".format(source_name)
+            )
             ConsoleWindow.instance.prompt()
 
-def on_sign_in(caller: bytes, status: str, message: str, player_spawnable_entity_id: int):
-    if status == "committed" and player_spawnable_entity_id != get_local_player_entity_id():
+
+def on_sign_in(
+    caller: bytes, status: str, message: str, player_spawnable_entity_id: int
+):
+    if (
+        status == "committed"
+        and player_spawnable_entity_id != get_local_player_entity_id()
+    ):
         local_room_id = get_local_player_room_id()
-        source_location = Location.filter_by_spawnable_entity_id(player_spawnable_entity_id)
-        if(local_room_id == source_location.room_id):
-            source_name = get_name(player_spawnable_entity_id)    
-            ConsoleWindow.instance.print("{} has entered the game.\n".format(source_name))
+        source_location = Location.filter_by_spawnable_entity_id(
+            player_spawnable_entity_id
+        )
+        if local_room_id == source_location.room_id:
+            source_name = get_name(player_spawnable_entity_id)
+            ConsoleWindow.instance.print(
+                "{} has entered the game.\n".format(source_name)
+            )
             ConsoleWindow.instance.prompt()
 
-def on_sign_out(caller: bytes, status: str, message: str, player_spawnable_entity_id: int):
-    if status == "committed" and player_spawnable_entity_id != get_local_player_entity_id():
+
+def on_sign_out(
+    caller: bytes, status: str, message: str, player_spawnable_entity_id: int
+):
+    if (
+        status == "committed"
+        and player_spawnable_entity_id != get_local_player_entity_id()
+    ):
         local_room_id = get_local_player_room_id()
-        source_location = Location.filter_by_spawnable_entity_id(player_spawnable_entity_id)
-        if(local_room_id == source_location.last_room_id):
-            source_name = get_name(player_spawnable_entity_id)    
-            ConsoleWindow.instance.print("{} has left the game.\n".format(source_name))    
+        source_location = Location.filter_by_spawnable_entity_id(
+            player_spawnable_entity_id
+        )
+        if local_room_id == source_location.last_room_id:
+            source_name = get_name(player_spawnable_entity_id)
+            ConsoleWindow.instance.print("{} has left the game.\n".format(source_name))
             ConsoleWindow.instance.prompt()
 
-def on_go(caller: bytes, status: str, message: str, source_spawnable_entity_id: int, exit_direction: str):    
-    global _game_controller 
-    
+
+def on_go(
+    caller: bytes,
+    status: str,
+    message: str,
+    source_spawnable_entity_id: int,
+    exit_direction: str,
+):
+    global _game_controller
+
+    print("on_go called status: {}".format(status))
     if status == "committed":
         if SpacetimeDBClient.instance.identity == caller:
-            ConsoleWindow.instance.print("You go {}.\n".format(exit_direction))    
+            ConsoleWindow.instance.print("You go {}.\n".format(exit_direction))
             _game_controller.prompt.room()
         else:
             local_room_id = get_local_player_room_id()
-            source_location = Location.filter_by_spawnable_entity_id(source_spawnable_entity_id)
-            if(source_location.last_room_id == local_room_id):
-                source_name = get_name(source_spawnable_entity_id)    
-                ConsoleWindow.instance.print("{} has left.\n".format(source_name))    
+            source_location = Location.filter_by_spawnable_entity_id(
+                source_spawnable_entity_id
+            )
+            if source_location.last_room_id == local_room_id:
+                source_name = get_name(source_spawnable_entity_id)
+                ConsoleWindow.instance.print("{} has left.\n".format(source_name))
                 ConsoleWindow.instance.prompt()
-            elif(source_location.room_id == local_room_id):
-                source_name = get_name(source_spawnable_entity_id)    
+            elif source_location.room_id == local_room_id:
+                source_name = get_name(source_spawnable_entity_id)
                 ConsoleWindow.instance.print("{} arrives.\n".format(source_name))
                 ConsoleWindow.instance.prompt()

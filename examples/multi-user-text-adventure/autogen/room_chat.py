@@ -9,6 +9,8 @@ from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 class RoomChat:
 	is_table_class = True
 
+	primary_key = "chat_entity_id"
+
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,RoomChat,RoomChat], None]):
 		SpacetimeDBClient.instance._register_row_update("RoomChat",callback)

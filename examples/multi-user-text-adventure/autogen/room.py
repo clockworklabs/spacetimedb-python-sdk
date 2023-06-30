@@ -10,6 +10,8 @@ from .exit import Exit
 class Room:
 	is_table_class = True
 
+	primary_key = "room_id"
+
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,Room,Room], None]):
 		SpacetimeDBClient.instance._register_row_update("Room",callback)
@@ -23,10 +25,6 @@ class Room:
 		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Room").values() if column_value.room_id == room_id]), None)
 
 	@classmethod
-	def filter_by_zone_id(cls, zone_id) -> List[Room]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Room").values() if column_value.zone_id == zone_id]
-
-	@classmethod
 	def filter_by_name(cls, name) -> List[Room]:
 		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Room").values() if column_value.name == name]
 
@@ -37,13 +35,12 @@ class Room:
 	def __init__(self, data: List[object]):
 		self.data = {}
 		self.data["room_id"] = str(data[0])
-		self.data["zone_id"] = str(data[1])
-		self.data["name"] = str(data[2])
-		self.data["description"] = str(data[3])
-		self.data["exits"] = [Exit(item) for item in data[4]]
+		self.data["name"] = str(data[1])
+		self.data["description"] = str(data[2])
+		self.data["exits"] = [Exit(item) for item in data[3]]
 
 	def encode(self) -> List[object]:
-		return [self.room_id, self.zone_id, self.name, self.description, self.exits]
+		return [self.room_id, self.name, self.description, self.exits]
 
 	def __getattr__(self, name: str):
 		return self.data.get(name)
