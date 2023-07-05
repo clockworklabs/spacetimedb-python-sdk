@@ -7,6 +7,12 @@ name = "spacetimedb_python_sdk"
 authors = [
     {name = "Derek Brinkmann", email = "derek@clockworklabs.io"},
 ]
+long_description = """
+# SpaceTimeDB Python SDK
+The SpacetimeDB Python SDK is a software development kit (SDK) designed to simplify the interaction with SpacetimeDB server modules.
+"""
+long_description_content_type = "text/markdown"
+
 dependencies = [
     "websocket-client",
     "configparser",
