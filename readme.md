@@ -1,6 +1,6 @@
-# SpacetimeDB Python SDK
+# SpaceTimeDB Python SDK
 
-A comprehensive software development kit (SDK) designed to facilitate the creation of client applications that interact with SpacetimeDB modules.
+The SpacetimeDB Python SDK is a software development kit (SDK) designed to simplify the interaction with SpacetimeDB server modules.
 
 ## Key Features
 
@@ -17,5 +17,3 @@ By subscribing to a set of queries, the SDK will keep a local cache of rows that
 Register for transaction and row update events.
 
 Full documentation can be found on the [SpacetimeDB](spacetimedb.com) website.
-
-Note: SpacetimeDB is not yet released and is only currently available to the partner program.
