@@ -1,0 +1,1 @@
+spacetimedb_python_sdk

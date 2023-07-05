@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm", "wheel", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spacetimedb_python_sdk"
+authors = [
+    {name = "Derek Brinkmann", email = "derek@clockworklabs.io"},
+]
+dependencies = [
+    "websocket-client",
+    "configparser",
+]
+dynamic = ["version"]
+
+# pyproject.toml
+[tool.setuptools_scm]
+write_to = "src/spacetimedb_python_sdk/_version.py"

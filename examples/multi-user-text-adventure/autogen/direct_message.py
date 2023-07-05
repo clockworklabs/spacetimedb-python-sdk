@@ -9,6 +9,8 @@ from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 class DirectMessage:
 	is_table_class = True
 
+	primary_key = "whisper_entity_id"
+
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,DirectMessage,DirectMessage], None]):
 		SpacetimeDBClient.instance._register_row_update("DirectMessage",callback)

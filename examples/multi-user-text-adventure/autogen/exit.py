@@ -9,10 +9,11 @@ class Exit:
 	def __init__(self, data: List[object]):
 		self.data = {}
 		self.data["direction"] = str(data[0])
-		self.data["destination_room_id"] = str(data[1])
+		self.data["examine"] = str(data[1])
+		self.data["destination_room_id"] = str(data[2])
 
 	def encode(self) -> List[object]:
-		return [self.direction, self.destination_room_id]
+		return [self.direction, self.examine, self.destination_room_id]
 
 	def __getattr__(self, name: str):
 		return self.data.get(name)

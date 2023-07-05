@@ -9,6 +9,8 @@ from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
 class Zone:
 	is_table_class = True
 
+	primary_key = "zone_id"
+
 	@classmethod
 	def register_row_update(cls, callback: Callable[[str,Zone,Zone], None]):
 		SpacetimeDBClient.instance._register_row_update("Zone",callback)

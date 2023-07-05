@@ -27,13 +27,18 @@ class Mobile:
 	def filter_by_name(cls, name) -> List[Mobile]:
 		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Mobile").values() if column_value.name == name]
 
+	@classmethod
+	def filter_by_description(cls, description) -> List[Mobile]:
+		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Mobile").values() if column_value.description == description]
+
 	def __init__(self, data: List[object]):
 		self.data = {}
 		self.data["spawnable_entity_id"] = int(data[0])
 		self.data["name"] = str(data[1])
+		self.data["description"] = str(data[2])
 
 	def encode(self) -> List[object]:
-		return [self.spawnable_entity_id, self.name]
+		return [self.spawnable_entity_id, self.name, self.description]
 
 	def __getattr__(self, name: str):
 		return self.data.get(name)
