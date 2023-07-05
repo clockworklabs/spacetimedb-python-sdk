@@ -1,4 +1,4 @@
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
 from helpers import *
 from console_window import ConsoleWindow
 from autogen import (

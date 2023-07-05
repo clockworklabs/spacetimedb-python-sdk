@@ -4,51 +4,99 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
+
 
 class DirectMessage:
-	is_table_class = True
+    is_table_class = True
 
-	primary_key = "whisper_entity_id"
+    primary_key = "whisper_entity_id"
 
-	@classmethod
-	def register_row_update(cls, callback: Callable[[str,DirectMessage,DirectMessage], None]):
-		SpacetimeDBClient.instance._register_row_update("DirectMessage",callback)
+    @classmethod
+    def register_row_update(
+        cls, callback: Callable[[str, DirectMessage, DirectMessage], None]
+    ):
+        SpacetimeDBClient.instance._register_row_update("DirectMessage", callback)
 
-	@classmethod
-	def iter(cls) -> Iterator[DirectMessage]:
-		return SpacetimeDBClient.instance._get_table_cache("DirectMessage").values()
+    @classmethod
+    def iter(cls) -> Iterator[DirectMessage]:
+        return SpacetimeDBClient.instance._get_table_cache("DirectMessage").values()
 
-	@classmethod
-	def filter_by_whisper_entity_id(cls, whisper_entity_id) -> DirectMessage:
-		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("DirectMessage").values() if column_value.whisper_entity_id == whisper_entity_id]), None)
+    @classmethod
+    def filter_by_whisper_entity_id(cls, whisper_entity_id) -> DirectMessage:
+        return next(
+            iter(
+                [
+                    column_value
+                    for column_value in SpacetimeDBClient.instance._get_table_cache(
+                        "DirectMessage"
+                    ).values()
+                    if column_value.whisper_entity_id == whisper_entity_id
+                ]
+            ),
+            None,
+        )
 
-	@classmethod
-	def filter_by_source_spawnable_entity_id(cls, source_spawnable_entity_id) -> List[DirectMessage]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("DirectMessage").values() if column_value.source_spawnable_entity_id == source_spawnable_entity_id]
+    @classmethod
+    def filter_by_source_spawnable_entity_id(
+        cls, source_spawnable_entity_id
+    ) -> List[DirectMessage]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "DirectMessage"
+            ).values()
+            if column_value.source_spawnable_entity_id == source_spawnable_entity_id
+        ]
 
-	@classmethod
-	def filter_by_target_spawnable_entity_id(cls, target_spawnable_entity_id) -> List[DirectMessage]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("DirectMessage").values() if column_value.target_spawnable_entity_id == target_spawnable_entity_id]
+    @classmethod
+    def filter_by_target_spawnable_entity_id(
+        cls, target_spawnable_entity_id
+    ) -> List[DirectMessage]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "DirectMessage"
+            ).values()
+            if column_value.target_spawnable_entity_id == target_spawnable_entity_id
+        ]
 
-	@classmethod
-	def filter_by_chat_text(cls, chat_text) -> List[DirectMessage]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("DirectMessage").values() if column_value.chat_text == chat_text]
+    @classmethod
+    def filter_by_chat_text(cls, chat_text) -> List[DirectMessage]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "DirectMessage"
+            ).values()
+            if column_value.chat_text == chat_text
+        ]
 
-	@classmethod
-	def filter_by_timestamp(cls, timestamp) -> List[DirectMessage]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("DirectMessage").values() if column_value.timestamp == timestamp]
+    @classmethod
+    def filter_by_timestamp(cls, timestamp) -> List[DirectMessage]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "DirectMessage"
+            ).values()
+            if column_value.timestamp == timestamp
+        ]
 
-	def __init__(self, data: List[object]):
-		self.data = {}
-		self.data["whisper_entity_id"] = int(data[0])
-		self.data["source_spawnable_entity_id"] = int(data[1])
-		self.data["target_spawnable_entity_id"] = int(data[2])
-		self.data["chat_text"] = str(data[3])
-		self.data["timestamp"] = int(data[4])
+    def __init__(self, data: List[object]):
+        self.data = {}
+        self.data["whisper_entity_id"] = int(data[0])
+        self.data["source_spawnable_entity_id"] = int(data[1])
+        self.data["target_spawnable_entity_id"] = int(data[2])
+        self.data["chat_text"] = str(data[3])
+        self.data["timestamp"] = int(data[4])
 
-	def encode(self) -> List[object]:
-		return [self.whisper_entity_id, self.source_spawnable_entity_id, self.target_spawnable_entity_id, self.chat_text, self.timestamp]
+    def encode(self) -> List[object]:
+        return [
+            self.whisper_entity_id,
+            self.source_spawnable_entity_id,
+            self.target_spawnable_entity_id,
+            self.chat_text,
+            self.timestamp,
+        ]
 
-	def __getattr__(self, name: str):
-		return self.data.get(name)
+    def __getattr__(self, name: str):
+        return self.data.get(name)

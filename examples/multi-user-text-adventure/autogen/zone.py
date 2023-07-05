@@ -4,47 +4,83 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
+
 
 class Zone:
-	is_table_class = True
+    is_table_class = True
 
-	primary_key = "zone_id"
+    primary_key = "zone_id"
 
-	@classmethod
-	def register_row_update(cls, callback: Callable[[str,Zone,Zone], None]):
-		SpacetimeDBClient.instance._register_row_update("Zone",callback)
+    @classmethod
+    def register_row_update(cls, callback: Callable[[str, Zone, Zone], None]):
+        SpacetimeDBClient.instance._register_row_update("Zone", callback)
 
-	@classmethod
-	def iter(cls) -> Iterator[Zone]:
-		return SpacetimeDBClient.instance._get_table_cache("Zone").values()
+    @classmethod
+    def iter(cls) -> Iterator[Zone]:
+        return SpacetimeDBClient.instance._get_table_cache("Zone").values()
 
-	@classmethod
-	def filter_by_zone_id(cls, zone_id) -> Zone:
-		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Zone").values() if column_value.zone_id == zone_id]), None)
+    @classmethod
+    def filter_by_zone_id(cls, zone_id) -> Zone:
+        return next(
+            iter(
+                [
+                    column_value
+                    for column_value in SpacetimeDBClient.instance._get_table_cache(
+                        "Zone"
+                    ).values()
+                    if column_value.zone_id == zone_id
+                ]
+            ),
+            None,
+        )
 
-	@classmethod
-	def filter_by_world_id(cls, world_id) -> List[Zone]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Zone").values() if column_value.world_id == world_id]
+    @classmethod
+    def filter_by_world_id(cls, world_id) -> List[Zone]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "Zone"
+            ).values()
+            if column_value.world_id == world_id
+        ]
 
-	@classmethod
-	def filter_by_name(cls, name) -> List[Zone]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Zone").values() if column_value.name == name]
+    @classmethod
+    def filter_by_name(cls, name) -> List[Zone]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "Zone"
+            ).values()
+            if column_value.name == name
+        ]
 
-	@classmethod
-	def filter_by_description(cls, description) -> List[Zone]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("Zone").values() if column_value.description == description]
+    @classmethod
+    def filter_by_description(cls, description) -> List[Zone]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "Zone"
+            ).values()
+            if column_value.description == description
+        ]
 
-	def __init__(self, data: List[object]):
-		self.data = {}
-		self.data["zone_id"] = str(data[0])
-		self.data["world_id"] = str(data[1])
-		self.data["name"] = str(data[2])
-		self.data["description"] = str(data[3])
-		self.data["connecting_zones"] = [str(item) for item in data[4]]
+    def __init__(self, data: List[object]):
+        self.data = {}
+        self.data["zone_id"] = str(data[0])
+        self.data["world_id"] = str(data[1])
+        self.data["name"] = str(data[2])
+        self.data["description"] = str(data[3])
+        self.data["connecting_zones"] = [str(item) for item in data[4]]
 
-	def encode(self) -> List[object]:
-		return [self.zone_id, self.world_id, self.name, self.description, self.connecting_zones]
+    def encode(self) -> List[object]:
+        return [
+            self.zone_id,
+            self.world_id,
+            self.name,
+            self.description,
+            self.connecting_zones,
+        ]
 
-	def __getattr__(self, name: str):
-		return self.data.get(name)
+    def __getattr__(self, name: str):
+        return self.data.get(name)

@@ -4,31 +4,43 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
+
 
 class User:
-	is_table_class = True
+    is_table_class = True
 
-	primary_key = "owner_id"
+    primary_key = "owner_id"
 
-	@classmethod
-	def register_row_update(cls, callback: Callable[[str,User,User], None]):
-		SpacetimeDBClient.instance._register_row_update("User",callback)
+    @classmethod
+    def register_row_update(cls, callback: Callable[[str, User, User], None]):
+        SpacetimeDBClient.instance._register_row_update("User", callback)
 
-	@classmethod
-	def iter(cls) -> Iterator[User]:
-		return SpacetimeDBClient.instance._get_table_cache("User").values()
+    @classmethod
+    def iter(cls) -> Iterator[User]:
+        return SpacetimeDBClient.instance._get_table_cache("User").values()
 
-	@classmethod
-	def filter_by_owner_id(cls, owner_id) -> User:
-		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("User").values() if column_value.owner_id == owner_id]), None)
+    @classmethod
+    def filter_by_owner_id(cls, owner_id) -> User:
+        return next(
+            iter(
+                [
+                    column_value
+                    for column_value in SpacetimeDBClient.instance._get_table_cache(
+                        "User"
+                    ).values()
+                    if column_value.owner_id == owner_id
+                ]
+            ),
+            None,
+        )
 
-	def __init__(self, data: List[object]):
-		self.data = {}
-		self.data["owner_id"] = bytes.fromhex(data[0])
+    def __init__(self, data: List[object]):
+        self.data = {}
+        self.data["owner_id"] = bytes.fromhex(data[0])
 
-	def encode(self) -> List[object]:
-		return [self.owner_id]
+    def encode(self) -> List[object]:
+        return [self.owner_id]
 
-	def __getattr__(self, name: str):
-		return self.data.get(name)
+    def __getattr__(self, name: str):
+        return self.data.get(name)

@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, "../..")
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
 
 import autogen
 from autogen.player import Player
@@ -13,7 +13,7 @@ from autogen.create_player_reducer import create_player
 from console_window import ConsoleWindow
 from create_char_prompt import CreateCharPrompt
 from game_prompt import GamePrompt
-import spacetimedb_python_sdk.local_config as local_config
+import spacetimedb_sdk.local_config as local_config
 from helpers import *
 
 import reducer_handlers

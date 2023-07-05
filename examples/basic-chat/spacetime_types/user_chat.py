@@ -4,34 +4,47 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
+
 
 class UserChat:
-	is_table_class = True
+    is_table_class = True
 
-	@classmethod
-	def register_row_update(cls, callback: Callable[[str,UserChat,UserChat], None]):
-		SpacetimeDBClient.instance._register_row_update("UserChat",callback)
+    @classmethod
+    def register_row_update(cls, callback: Callable[[str, UserChat, UserChat], None]):
+        SpacetimeDBClient.instance._register_row_update("UserChat", callback)
 
-	@classmethod
-	def iter(cls) -> Iterator[UserChat]:
-		return SpacetimeDBClient.instance._get_table_cache("UserChat").values()
+    @classmethod
+    def iter(cls) -> Iterator[UserChat]:
+        return SpacetimeDBClient.instance._get_table_cache("UserChat").values()
 
-	@classmethod
-	def filter_by_owner_id(cls, owner_id) -> List[UserChat]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("UserChat").values() if column_value.owner_id == owner_id]
+    @classmethod
+    def filter_by_owner_id(cls, owner_id) -> List[UserChat]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "UserChat"
+            ).values()
+            if column_value.owner_id == owner_id
+        ]
 
-	@classmethod
-	def filter_by_chat(cls, chat) -> List[UserChat]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("UserChat").values() if column_value.chat == chat]
+    @classmethod
+    def filter_by_chat(cls, chat) -> List[UserChat]:
+        return [
+            column_value
+            for column_value in SpacetimeDBClient.instance._get_table_cache(
+                "UserChat"
+            ).values()
+            if column_value.chat == chat
+        ]
 
-	def __init__(self, data: List[object]):
-		self.data = {}
-		self.data["owner_id"] = bytes.fromhex(data[0])
-		self.data["chat"] = str(data[1])
+    def __init__(self, data: List[object]):
+        self.data = {}
+        self.data["owner_id"] = bytes.fromhex(data[0])
+        self.data["chat"] = str(data[1])
 
-	def encode(self) -> List[object]:
-		return [self.owner_id, self.chat]
+    def encode(self) -> List[object]:
+        return [self.owner_id, self.chat]
 
-	def __getattr__(self, name: str):
-		return self.data.get(name)
+    def __getattr__(self, name: str):
+        return self.data.get(name)

@@ -3,25 +3,30 @@
 
 from typing import List, Callable
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
 
 
 def go(source_spawnable_entity_id: int, exit_direction: str):
-	source_spawnable_entity_id = source_spawnable_entity_id
-	exit_direction = exit_direction
-	SpacetimeDBClient.instance._reducer_call("go", source_spawnable_entity_id, exit_direction)
+    source_spawnable_entity_id = source_spawnable_entity_id
+    exit_direction = exit_direction
+    SpacetimeDBClient.instance._reducer_call(
+        "go", source_spawnable_entity_id, exit_direction
+    )
+
 
 def register_on_go(callback: Callable[[bytes, str, str, int, str], None]):
-	if not _check_callback_signature(callback):
-		raise ValueError("Callback signature does not match expected arguments")
+    if not _check_callback_signature(callback):
+        raise ValueError("Callback signature does not match expected arguments")
 
-	SpacetimeDBClient.instance._register_reducer("go", callback)
+    SpacetimeDBClient.instance._register_reducer("go", callback)
+
 
 def _decode_args(data):
-	return [int(data[0]), str(data[1])]
+    return [int(data[0]), str(data[1])]
+
 
 def _check_callback_signature(callback: Callable) -> bool:
-	expected_arguments = [bytes, str, str, int, str]
-	callback_arguments = callback.__annotations__.values()
+    expected_arguments = [bytes, str, str, int, str]
+    callback_arguments = callback.__annotations__.values()
 
-	return list(callback_arguments) == expected_arguments
+    return list(callback_arguments) == expected_arguments
