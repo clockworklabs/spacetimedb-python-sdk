@@ -14,16 +14,19 @@ from datetime import timedelta
 from datetime import datetime
 import traceback
 
-from spacetimedb_python_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
+
 
 class SpacetimeDBException(Exception):
     pass
 
-class SpacetimeDBScheduledEvent():
+
+class SpacetimeDBScheduledEvent:
     def __init__(self, datetime, callback, args):
         self.fire_time = datetime
         self.callback = callback
         self.args = args
+
 
 class SpacetimeDBAsyncClient:
     request_timeout = 5
@@ -31,18 +34,18 @@ class SpacetimeDBAsyncClient:
     is_connected = False
     is_closing = False
     identity = None
-    
-    def __init__(self, autogen_package):        
-        """ 
+
+    def __init__(self, autogen_package):
+        """
         Create a SpacetimeDBAsyncClient object
 
         Attributes:
-            autogen_package : package folder created by running the generate command from the CLI   
+            autogen_package : package folder created by running the generate command from the CLI
 
         """
         self.client = SpacetimeDBClient(autogen_package)
         self.prescheduled_events = []
-        self.event_queue = None    
+        self.event_queue = None
 
     def schedule_event(self, delay_secs, callback, *args):
         """
@@ -63,18 +66,20 @@ class SpacetimeDBAsyncClient:
             # convert the delay to a datetime
             fire_time = datetime.now() + timedelta(seconds=delay_secs)
             scheduled_event = SpacetimeDBScheduledEvent(fire_time, callback, args)
-            
+
             # create async task
             def on_scheduled_event():
                 self.event_queue.put_nowait(("scheduled_event", scheduled_event))
                 scheduled_event.callback(*scheduled_event.args)
 
             async def wait_for_delay():
-                await asyncio.sleep((scheduled_event.fire_time - datetime.now()).total_seconds())
+                await asyncio.sleep(
+                    (scheduled_event.fire_time - datetime.now()).total_seconds()
+                )
                 on_scheduled_event()
-            
+
             asyncio.create_task(wait_for_delay())
-        
+
     def force_close(self):
         """
         Signal the client to stop processing events and close the connection to the server.
@@ -82,13 +87,21 @@ class SpacetimeDBAsyncClient:
         This will cause the client to close even if there are scheduled events that have not fired yet.
         """
 
-        self.is_closing = True        
+        self.is_closing = True
 
         # TODO Cancel all scheduled event tasks
 
         self.event_queue.put_nowait(("force_close", None))
 
-    async def run(self, auth_token, host, address_or_name, ssl_enabled, on_connect, subscription_queries=[]):
+    async def run(
+        self,
+        auth_token,
+        host,
+        address_or_name,
+        ssl_enabled,
+        on_connect,
+        subscription_queries=[],
+    ):
         """
         Run the client. This function will not return until the client is closed.
 
@@ -104,10 +117,12 @@ class SpacetimeDBAsyncClient:
         if not self.event_queue:
             self._on_async_loop_start()
 
-        identity_result = await self.connect(auth_token, host, address_or_name, ssl_enabled, subscription_queries)
+        identity_result = await self.connect(
+            auth_token, host, address_or_name, ssl_enabled, subscription_queries
+        )
 
         if on_connect is not None:
-            on_connect(identity_result[0],identity_result[1])
+            on_connect(identity_result[0], identity_result[1])
 
         def on_subscription_applied():
             self.event_queue.put_nowait(("subscription_applied", None))
@@ -120,19 +135,21 @@ class SpacetimeDBAsyncClient:
 
         while not self.is_closing:
             event, payload = await self._event()
-            if event == 'disconnected':
+            if event == "disconnected":
                 if self.is_closing:
                     return payload
                 else:
                     raise payload
-            elif event == 'error':
+            elif event == "error":
                 raise payload
-            elif event == 'force_close':
-                break            
+            elif event == "force_close":
+                break
 
-        await self.close() 
+        await self.close()
 
-    async def connect(self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]):
+    async def connect(
+        self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]
+    ):
         """
         Connect to the server.
 
@@ -150,29 +167,35 @@ class SpacetimeDBAsyncClient:
             self._on_async_loop_start()
 
         def on_error(error):
-            self.event_queue.put_nowait(('error', SpacetimeDBException(error)))
+            self.event_queue.put_nowait(("error", SpacetimeDBException(error)))
 
         def on_disconnect(close_msg):
             if self.is_closing:
-                self.event_queue.put_nowait(('disconnected', close_msg))
+                self.event_queue.put_nowait(("disconnected", close_msg))
             else:
-                self.event_queue.put_nowait(('error', SpacetimeDBException(close_msg)))
+                self.event_queue.put_nowait(("error", SpacetimeDBException(close_msg)))
 
         def on_identity_received(auth_token, identity):
-            self.identity = identity            
+            self.identity = identity
             self.client.subscribe(subscription_queries)
-            self.event_queue.put_nowait(('connected', (auth_token, identity)))
+            self.event_queue.put_nowait(("connected", (auth_token, identity)))
 
-        self.client.connect(auth_token, host, address_or_name, ssl_enabled, on_connect=None, 
-                            on_error=on_error, 
-                            on_disconnect=on_disconnect, 
-                            on_identity=on_identity_received)
+        self.client.connect(
+            auth_token,
+            host,
+            address_or_name,
+            ssl_enabled,
+            on_connect=None,
+            on_error=on_error,
+            on_disconnect=on_disconnect,
+            on_identity=on_identity_received,
+        )
 
         while True:
             event, payload = await self._event()
-            if event == 'error':
+            if event == "error":
                 raise payload
-            elif event == 'connected':
+            elif event == "connected":
                 self.is_connected = True
                 return payload
 
@@ -181,16 +204,16 @@ class SpacetimeDBAsyncClient:
         Call a reducer on the async loop. This function will not return until the reducer call completes.
 
         NOTE: DO NOT call this function if you are using the run() function. You should use the
-        auto-generated reducer functions instead. 
+        auto-generated reducer functions instead.
 
-        Args:       
+        Args:
             reducer_name : name of the reducer to call
-            reducer_args (variable) : arguments to pass to the reducer            
+            reducer_args (variable) : arguments to pass to the reducer
 
         """
 
         def on_reducer_result(event):
-            if(event.reducer == reducer_name and event.caller_identity == self.identity):
+            if event.reducer == reducer_name and event.caller_identity == self.identity:
                 self.event_queue.put_nowait(("reducer_result", event))
 
         self.client.register_on_event(on_reducer_result)
@@ -201,7 +224,7 @@ class SpacetimeDBAsyncClient:
 
         while True:
             event, payload = await self._event()
-            if event == 'reducer_result':
+            if event == "reducer_result":
                 if not timeout_task.done():
                     timeout_task.cancel()
                 return payload
@@ -219,10 +242,10 @@ class SpacetimeDBAsyncClient:
         timeout_task = asyncio.create_task(self._timeout_task(self.request_timeout))
 
         self.client.close()
-        
+
         while True:
             event, payload = await self._event()
-            if event == 'disconnected':
+            if event == "disconnected":
                 if not timeout_task.done():
                     timeout_task.cancel()
                 break
@@ -232,11 +255,11 @@ class SpacetimeDBAsyncClient:
     def _on_async_loop_start(self):
         self.event_queue = asyncio.Queue()
         for event in self.prescheduled_events:
-            self.schedule_event(event[0],event[1],*event[2])    
+            self.schedule_event(event[0], event[1], *event[2])
 
     async def _timeout_task(self, timeout):
         await asyncio.sleep(timeout)
-        self.event_queue.put_nowait(('timeout',))
+        self.event_queue.put_nowait(("timeout",))
 
     async def _event(self):
         update_task = asyncio.create_task(self._periodic_update())
@@ -247,7 +270,7 @@ class SpacetimeDBAsyncClient:
         except Exception as e:
             update_task.cancel()
             print(f"Exception: {e}")
-            raise e        
+            raise e
 
     async def _periodic_update(self):
         while True:
@@ -255,6 +278,6 @@ class SpacetimeDBAsyncClient:
                 self.client.update()
             except Exception as e:
                 print(f"Exception: {e}")
-                self.event_queue.put_nowait(('error', e))
+                self.event_queue.put_nowait(("error", e))
                 return
             await asyncio.sleep(0.1)

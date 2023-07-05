@@ -6,7 +6,7 @@
 
     Example usage:
 
-    import spacetimedb_python_sdk.local_config as local_config
+    import spacetimedb_sdk.local_config as local_config
 
     # Initialize the config file
     local_config.init()
@@ -20,7 +20,7 @@
     local_config.set_string("auth_token", auth_token)
 
     # Next time you run the program, it will load the same token 
-""" 
+"""
 
 import os
 import configparser
@@ -29,15 +29,16 @@ import sys
 config = None
 settings_path = None
 
-def init(config_folder = None, config_file = None, config_root = None, config_defaults = None):
+
+def init(config_folder=None, config_file=None, config_root=None, config_defaults=None):
     """
     Initialize the config file
 
-    Format of config defaults is a dictionary of key/value pairs 
+    Format of config defaults is a dictionary of key/value pairs
 
     Example:
 
-        import spacetimedb_python_sdk.local_config as local_config
+        import spacetimedb_sdk.local_config as local_config
 
         config_defaults = { "open_ai_key" : "12345" }
         local_config.init(".my_config_folder", config_defaults = config_defaults)
@@ -67,7 +68,9 @@ def init(config_folder = None, config_file = None, config_root = None, config_de
         client_index = sys.argv.index("--client")
         config_file_prefix = config_file.split(".")[0]
         config_file_ext = config_file.split(".")[1]
-        config_file = "{}_{}.{}".format(config_file_prefix,sys.argv[client_index + 1],config_file_ext)
+        config_file = "{}_{}.{}".format(
+            config_file_prefix, sys.argv[client_index + 1], config_file_ext
+        )
 
     settings_path = os.path.join(config_root, config_folder, config_file)
 
@@ -78,9 +81,10 @@ def init(config_folder = None, config_file = None, config_root = None, config_de
     else:
         # Set some default config values
         config["main"] = {}
-        if config_defaults is not None:            
-                for key, value in config_defaults.items():
-                    config["main"][key] = value
+        if config_defaults is not None:
+            for key, value in config_defaults.items():
+                config["main"][key] = value
+
 
 def set_config(config_in):
     global config
@@ -89,6 +93,7 @@ def set_config(config_in):
         config["main"][key] = value
     _save()
 
+
 def get_string(key):
     global config
 
@@ -96,12 +101,14 @@ def get_string(key):
         return config["main"][key]
     return None
 
+
 def set_string(key, value):
     global config
 
     # Update config values at runtime
     config["main"][key] = value
     _save()
+
 
 def _save():
     global settings_path

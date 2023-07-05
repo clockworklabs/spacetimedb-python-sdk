@@ -9,16 +9,23 @@ This pattern is useful for testing reducers on your SpacetimeDB module.
 
 import asyncio
 
-from spacetimedb_python_sdk.spacetimedb_async_client import SpacetimeDBAsyncClient
+from spacetimedb_sdk.spacetimedb_async_client import SpacetimeDBAsyncClient
 
 import autogen
+
 
 async def main():
     try:
         client = SpacetimeDBAsyncClient(autogen)
 
         # Connect to the server.
-        (auth_token, identity) = await client.connect(None, "localhost:3000", "asyncio", False, ["SELECT * FROM User", "SELECT * FROM UserChat"])
+        (auth_token, identity) = await client.connect(
+            None,
+            "localhost:3000",
+            "asyncio",
+            False,
+            ["SELECT * FROM User", "SELECT * FROM UserChat"],
+        )
 
         print(f"Connected with identity {identity}")
 
@@ -30,9 +37,10 @@ async def main():
 
         print(f"Reducer result: {result}")
         await client.close()
-    except Exception as e:                
-        await client.close()      
-        raise e  
+    except Exception as e:
+        await client.close()
+        raise e
+
 
 if __name__ == "__main__":
     asyncio.run(main())

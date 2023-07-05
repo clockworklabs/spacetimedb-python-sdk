@@ -4,8 +4,8 @@ from types import ModuleType
 import json
 import queue
 
-from spacetimedb_python_sdk.spacetime_websocket_client import WebSocketClient
-from spacetimedb_python_sdk.client_cache import ClientCache
+from spacetimedb_sdk.spacetime_websocket_client import WebSocketClient
+from spacetimedb_sdk.client_cache import ClientCache
 
 
 class DbEvent:
