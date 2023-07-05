@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm", "wheel", "build"]
+requires = ["setuptools", "wheel", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,9 +11,5 @@ dependencies = [
     "websocket-client",
     "configparser",
 ]
-dynamic = ["version"]
+version = "0.5.0"
 readme = "README.md"
-
-# pyproject.toml
-[tool.setuptools_scm]
-write_to = "src/spacetimedb_python_sdk/_version.py"
