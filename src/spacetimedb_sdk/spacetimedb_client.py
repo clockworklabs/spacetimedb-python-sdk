@@ -361,7 +361,7 @@ class SpacetimeDBClient:
         self.wsc.send(bytes(f'{{"call": {json_data}}}', "ascii"))
 
     def _on_message(self, data):
-        print("_on_message data: " + data)
+        # print("_on_message data: " + data)
         message = json.loads(data)
         if "IdentityToken" in message:
             # is this safe to do in the message thread?
@@ -423,7 +423,7 @@ class SpacetimeDBClient:
                 if self._on_identity:
                     self._on_identity(next_message.auth_token, self.identity)
             else:
-                print(f"next_message: {next_message.transaction_type}")
+                # print(f"next_message: {next_message.transaction_type}")
                 # apply all the event state before calling callbacks
                 for table_name, table_events in next_message.events.items():
                     for row_pk, element in self.client_cache.get_table_cache(
@@ -490,7 +490,7 @@ class SpacetimeDBClient:
 
                     # now we can apply the events to the cache
                     for db_event in table_events:
-                        print(f"db_event: {db_event.row_op} {table_name}")
+                        # print(f"db_event: {db_event.row_op} {table_name}")
                         if db_event.row_op == "insert" or db_event.row_op == "update":
                             # in the case of updates we need to delete the old entry
                             if db_event.row_op == "update":
