@@ -426,11 +426,6 @@ class SpacetimeDBClient:
                 # print(f"next_message: {next_message.transaction_type}")
                 # apply all the event state before calling callbacks
                 for table_name, table_events in next_message.events.items():
-                    for row_pk, element in self.client_cache.get_table_cache(
-                        table_name
-                    ).entries.items():
-                        print("Cache entry: " + str(row_pk) + " " + str(element))
-
                     # first retrieve the old values for all events
                     for db_event in table_events:
                         # get the old value for sending callbacks
