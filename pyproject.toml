@@ -7,9 +7,12 @@ name = "spacetimedb_sdk"
 authors = [
     {name = "Derek Brinkmann", email = "derek@clockworklabs.io"},
 ]
-# urls: Table
+
+# urls
 # Should describe where to find useful info for your project
-urls = {source = "github.com/clockworklabs/spacetimedb-python-sdk", website = "spacetimedb.com"}
+[project.urls]
+homepage = "https://spacetimedb.com"
+repository = "https://github.com/clockworklabs/spacetimedb-python-sdk"
 
 dependencies = [
     "websocket-client",
