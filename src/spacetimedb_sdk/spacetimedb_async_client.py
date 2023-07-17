@@ -9,6 +9,7 @@ the examples in the examples/asyncio directory.
 
 """
 
+from typing import List
 import asyncio
 from datetime import timedelta
 from datetime import datetime
@@ -79,6 +80,42 @@ class SpacetimeDBAsyncClient:
                 on_scheduled_event()
 
             asyncio.create_task(wait_for_delay())
+
+    def register_on_subscription_applied(self, callback):
+        """
+        Register a callback function to be executed when the local cache is updated as a result of a change to the subscription queries.
+
+        Args:
+            callback (Callable[[], None]): A callback function that will be invoked on each subscription update.
+                The callback function should not accept any arguments and should not return any value.
+
+        Example:
+            def subscription_callback():
+                # Code to be executed on each subscription update
+
+            spacetime_client.register_on_subscription_applied(subscription_callback)
+
+        """
+
+        self.client.register_on_subscription_applied(callback)
+
+    def subscribe(self, queries: List[str]):
+        """
+        Subscribe to receive data and transaction updates for the provided queries.
+
+        This function sends a subscription request to the SpacetimeDB module, indicating that the client
+        wants to receive data and transaction updates related to the specified queries.
+
+        Args:
+            queries (List[str]): A list of queries to subscribe to. Each query is a string representing
+                an sql formatted query statement.
+
+        Example:
+            queries = ["SELECT * FROM table1", "SELECT * FROM table2 WHERE col2 = 0"]
+            spacetime_client.subscribe(queries)
+        """
+
+        self.client.subscribe(queries)
 
     def force_close(self):
         """
