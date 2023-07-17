@@ -8,6 +8,52 @@ from spacetimedb_sdk.spacetime_websocket_client import WebSocketClient
 from spacetimedb_sdk.client_cache import ClientCache
 
 
+class Identity:
+    """
+    Represents a user identity. This is a wrapper around the Uint8Array that is recieved from SpacetimeDB.
+
+    Attributes:
+        data (bytes): The identity data.
+    """
+
+    def __init__(self, data):
+        self.data = bytes(data)  # Ensure data is always bytes
+
+    @staticmethod
+    def from_string(string):
+        """
+        Returns an Identity object with the data attribute set to the byte representation of the input string.
+
+        Args:
+            string (str): The input string.
+
+        Returns:
+            Identity: The Identity object.
+        """
+        return Identity(bytes.fromhex(string))
+
+    @staticmethod
+    def from_bytes(data):
+        """
+        Returns an Identity object with the data attribute set to the input bytes.
+
+        Args:
+            data (bytes): The input bytes.
+
+        Returns:
+            Identity: The Identity object.
+        """
+        return Identity(data)
+
+    # override to_string
+    def __str__(self):
+        return self.data.decode("utf-8")
+
+    # override = operator
+    def __eq__(self, other):
+        return isinstance(other, Identity) and self.data == other.data
+
+
 class DbEvent:
     """
     Represents a database event.
@@ -86,7 +132,7 @@ class TransactionUpdateMessage(_ClientApiMessage):
 
     def __init__(
         self,
-        caller_identity: str,
+        caller_identity: Identity,
         status: str,
         message: str,
         reducer_name: str,
@@ -116,7 +162,7 @@ class SpacetimeDBClient:
         autogen_package: ModuleType,
         on_connect: Callable[[], None] = None,
         on_disconnect: Callable[[str], None] = None,
-        on_identity: Callable[[bytes], None] = None,
+        on_identity: Callable[[str, Identity], None] = None,
         on_error: Callable[[str], None] = None,
     ):
         """
@@ -366,7 +412,7 @@ class SpacetimeDBClient:
         if "IdentityToken" in message:
             # is this safe to do in the message thread?
             token = message["IdentityToken"]["token"]
-            identity = bytes.fromhex(message["IdentityToken"]["identity"])
+            identity = Identity.from_string(message["IdentityToken"]["identity"])
             self.message_queue.put(_IdentityReceivedMessage(token, identity))
         elif "SubscriptionUpdate" in message or "TransactionUpdate" in message:
             clientapi_message = None
@@ -378,7 +424,7 @@ class SpacetimeDBClient:
                 spacetime_message = message["TransactionUpdate"]
                 # DAB Todo: We need reducer codegen to parse the args
                 clientapi_message = TransactionUpdateMessage(
-                    bytes.fromhex(spacetime_message["event"]["caller_identity"]),
+                    Identity.from_string(spacetime_message["event"]["caller_identity"]),
                     spacetime_message["event"]["status"],
                     spacetime_message["event"]["message"],
                     spacetime_message["event"]["function_call"]["reducer"],
@@ -461,6 +507,7 @@ class SpacetimeDBClient:
                                     # this is a row update so we need to replace the insert
                                     db_event.row_op = "update"
                                     db_event.old_pk = other_db_event.row_pk
+                                    db_event.old_value = other_db_event.old_value
                                     primary_key_row_ops[primary_key_value] = db_event
                                 elif (
                                     db_event.row_op == "delete"
@@ -473,6 +520,9 @@ class SpacetimeDBClient:
                                     primary_key_row_ops[
                                         primary_key_value
                                     ].old_pk = db_event.row_pk
+                                    primary_key_row_ops[
+                                        primary_key_value
+                                    ].old_value = db_event.old_value
                                 else:
                                     print(
                                         f"Error: duplicate primary key {table_name}:{primary_key_value}"
