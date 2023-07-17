@@ -12,7 +12,7 @@ dependencies = [
     "websocket-client",
     "configparser",
 ]
-version = "0.5.0.1"
+version = "0.5.0.2"
 readme = "README.md"
 
 # urls
