@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, "../../../src")
-
 import asyncio
 from multiprocessing import Queue
 import threading
@@ -17,6 +14,7 @@ import spacetime_types.set_name_reducer as set_name_reducer
 input_queue = Queue()
 local_identity = None
 
+
 def user_name_or_identity(user):
     if user.name:
         return user.name
@@ -24,11 +22,98 @@ def user_name_or_identity(user):
         return (str(user.identity))[:8]
 
 
+def on_user_row_update(row_op, user_old, user, reducer_event):
+    if row_op == "insert":
+        if user.online:
+            print(f"User {user_name_or_identity(user)} connected.")
+    elif row_op == "update":
+        if user_old.online and not user.online:
+            print(f"User {user_name_or_identity(user)} disconnected.")
+        elif not user_old.online and user.online:
+            print(f"User {user_name_or_identity(user)} connected.")
+
+        if user_old.name != user.name:
+            print(
+                f"User {user_name_or_identity(user_old)} renamed to {user_name_or_identity(user)}."
+            )
+
+
+def on_message_row_update(row_op, message_old, message, reducer_event):
+    if reducer_event is not None and row_op == "insert":
+        print_message(message)
+
+
+def print_message(message):
+    user = User.filter_by_identity(message.sender)
+    user_name = "unknown"
+    if user is not None:
+        user_name = user_name_or_identity(user)
+
+    print(f"{user_name}: {message.text}")
+
+
+def on_set_name_reducer(sender, status, message, name):
+    if sender == local_identity:
+        if status == "failed":
+            print(f"Failed to set name: {message}")
+
+
+def on_send_message_reducer(sender, status, message, msg):
+    if sender == local_identity:
+        if status == "failed":
+            print(f"Failed to send message: {message}")
+
+
 def print_menu():
     print("1. Read messages")
     print("2. Send a message")
     print("3. Set name")
     print("4. Quit")
+
+
+def on_subscription_applied():
+    print(f"\nSYSTEM: Connected.")
+    print_menu()
+
+
+def print_messages_in_order():
+    all_messages = sorted(Message.iter(), key=lambda x: x.sent)
+    for entry in all_messages:
+        print(
+            f"{user_name_or_identity(User.filter_by_identity(entry.sender))}: {entry.text}"
+        )
+
+
+def check_commands():
+    global input_queue
+
+    if not input_queue.empty():
+        choice = input_queue.get()
+        if choice[0] == "1":
+            print("\nSender: Message")
+            print_messages_in_order()
+            print("\n")
+            print_menu()
+        elif choice[0] == "2":
+            send_message_reducer.send_message(choice[1])
+            print_menu()
+        elif choice[0] == "3":
+            set_name_reducer.set_name(choice[1])
+            print_menu()
+
+    spacetime_client.schedule_event(0.1, check_commands)
+
+
+def register_callbacks(spacetime_client):
+    spacetime_client.client.register_on_subscription_applied(on_subscription_applied)
+
+    User.register_row_update(on_user_row_update)
+    Message.register_row_update(on_message_row_update)
+
+    set_name_reducer.register_on_set_name(on_set_name_reducer)
+    send_message_reducer.register_on_send_message(on_send_message_reducer)
+
+    spacetime_client.schedule_event(0.1, check_commands)
 
 
 def input_loop():
@@ -49,88 +134,15 @@ def input_loop():
         else:
             print("Invalid choice")
 
-def on_user_row_update(row_op, user_old, user, reducer_event):
-    if row_op == "insert":
-        if user.online:
-            print(f"User {user_name_or_identity(user)} connected.")
-    elif row_op == "update":
-        if user_old.online and not user.online:
-            print(f"User {user_name_or_identity(user)} disconnected.")
-        elif not user_old.online and user.online:
-            print(f"User {user_name_or_identity(user)} connected.")
-
-        if user_old.name != user.name:
-            print(
-                f"User {user_name_or_identity(user_old)} renamed to {user_name_or_identity(user)}."
-            )
-
-def on_message_row_update(row_op, message_old, message, reducer_event):
-    if reducer_event is not None and row_op == "insert":
-        print_message(message)
-
-def print_message(message):
-    user = User.filter_by_identity(message.sender)
-    user_name = "unknown"
-    if user is not None:
-        user_name = user_name_or_identity(user)
-
-    print(f"{user_name}: {message.text}")
-
-def print_messages_in_order():
-    all_messages = sorted(Message.iter(), key=lambda x: x.sent)
-    for entry in all_messages:
-        print(f"{user_name_or_identity(User.filter_by_identity(entry.sender))}: {entry.text}")
-
-def on_set_name_reducer(sender, status, message, name):
-    if sender == local_identity:
-        if status == "failed":
-            print(f"Failed to set name: {message}")
-
-def on_send_message_reducer(sender, status, message, msg):
-    if sender == local_identity:
-        if status == "failed":
-            print(f"Failed to send message: {message}")            
-
-def on_subscription_applied():
-    print(f"\nSYSTEM: Connected.")
-    print_menu()
 
 def on_connect(auth_token, identity):
     global local_identity
     local_identity = identity
 
     local_config.set_string("auth_token", auth_token)
-    
-def check_commands():
-    global input_queue
 
-    if not input_queue.empty():
-        choice = input_queue.get()
-        if choice[0] == "1":
-            print("\nSender: Message")
-            print_messages_in_order()
-            print("\n")
-            print_menu()
-        elif choice[0] == "2":
-            send_message_reducer.send_message(choice[1])
-            print_menu()
-        elif choice[0] == "3":
-            set_name_reducer.set_name(choice[1])
-            print_menu()
 
-    spacetime_client.schedule_event(0.1, check_commands)
-
-def register_callbacks(spacetime_client):
-    User.register_row_update(on_user_row_update)
-    Message.register_row_update(on_message_row_update)
-    set_name_reducer.register_on_set_name(on_set_name_reducer)
-    send_message_reducer.register_on_send_message(on_send_message_reducer)
-
-    spacetime_client.register_on_subscription_applied(on_subscription_applied)
-
-    spacetime_client.schedule_event(0.1, check_commands)
-
-def run_client(spacetime_client):    
+def run_client(spacetime_client):
     asyncio.run(
         spacetime_client.run(
             local_config.get_string("auth_token"),
@@ -141,6 +153,7 @@ def run_client(spacetime_client):
             ["SELECT * FROM User", "SELECT * FROM Message"],
         )
     )
+
 
 if __name__ == "__main__":
     local_config.init(".spacetimedb-python-quickstart")
