@@ -11,4 +11,4 @@ venv/
 
 # dist folder
 /dist/
-/spacetimedb_python_sdk.egg-info/
+/src/spacetimedb_sdk.egg-info/
