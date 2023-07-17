@@ -2,7 +2,7 @@
 
 <a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-# <kbd>module</kbd> `src.spacetimedb_sdk.spacetimedb_client`
+# <kbd>module</kbd> `spacetimedb_sdk.spacetimedb_client`
 
 
 
@@ -12,6 +12,83 @@
 ---
 
 <a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L11"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+## <kbd>class</kbd> `Identity`
+Represents a user identity. This is a wrapper around the Uint8Array that is recieved from SpacetimeDB. 
+
+
+
+**Attributes:**
+ 
+ - <b>`data`</b> (bytes):  The identity data. 
+
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L19"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `__init__`
+
+```python
+__init__(data)
+```
+
+
+
+
+
+
+
+
+---
+
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L35"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `from_bytes`
+
+```python
+from_bytes(data)
+```
+
+Returns an Identity object with the data attribute set to the input bytes. 
+
+
+
+**Args:**
+ 
+ - <b>`data`</b> (bytes):  The input bytes. 
+
+
+
+**Returns:**
+ 
+ - <b>`Identity`</b>:  The Identity object. 
+
+---
+
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L22"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>method</kbd> `from_string`
+
+```python
+from_string(string)
+```
+
+Returns an Identity object with the data attribute set to the byte representation of the input string. 
+
+
+
+**Args:**
+ 
+ - <b>`string`</b> (str):  The input string. 
+
+
+
+**Returns:**
+ 
+ - <b>`Identity`</b>:  The Identity object. 
+
+
+---
+
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L57"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `DbEvent`
 Represents a database event. 
@@ -25,9 +102,9 @@ Represents a database event.
  - <b>`row_op`</b> (str):  The operation performed on the row (e.g., "insert", "update", "delete"). 
  - <b>`decoded_value`</b> (Any, optional):  The decoded value of the affected row. Defaults to None. 
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L22"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L68"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `DbEvent.__init__`
+### <kbd>method</kbd> `__init__`
 
 ```python
 __init__(table_name, row_pk, row_op, decoded_value=None)
@@ -43,16 +120,16 @@ __init__(table_name, row_pk, row_op, decoded_value=None)
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L63"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L109"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `ReducerEvent`
 
 
 
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L64"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L110"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `ReducerEvent.__init__`
+### <kbd>method</kbd> `__init__`
 
 ```python
 __init__(caller_identity, reducer_name, status, message, args)
@@ -68,7 +145,7 @@ __init__(caller_identity, reducer_name, status, message, args)
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L72"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L118"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TransactionUpdateMessage`
 Represents a transaction update message. Used in on_event callbacks. 
@@ -86,13 +163,13 @@ For more details, see `spacetimedb_client.SpacetimeDBClient.register_on_event`
  - <b>`args`</b> (dict):  Additional arguments for the transaction. 
  - <b>`events`</b> (List[DbEvent]):  List of DBEvents that were committed. 
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L87"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L133"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `TransactionUpdateMessage.__init__`
+### <kbd>method</kbd> `__init__`
 
 ```python
 __init__(
-    caller_identity: str,
+    caller_identity: Identity,
     status: str,
     message: str,
     reducer_name: str,
@@ -109,9 +186,9 @@ __init__(
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L38"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L84"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `TransactionUpdateMessage.append_event`
+### <kbd>method</kbd> `append_event`
 
 ```python
 append_event(table_name, event)
@@ -124,14 +201,14 @@ append_event(table_name, event)
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L101"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L147"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `SpacetimeDBClient`
 The SpacetimeDBClient class is the primary interface for communication with the SpacetimeDB Module in the SDK, facilitating interaction with the database. 
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L151"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L197"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.__init__`
+### <kbd>method</kbd> `__init__`
 
 ```python
 __init__(autogen_package)
@@ -146,9 +223,9 @@ __init__(autogen_package)
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L211"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L257"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.close`
+### <kbd>method</kbd> `close`
 
 ```python
 close()
@@ -170,9 +247,9 @@ This function closes the WebSocket connection to the SpacetimeDB module.
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L166"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L212"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.connect`
+### <kbd>method</kbd> `connect`
 
 ```python
 connect(
@@ -193,9 +270,9 @@ connect(
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L109"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L155"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>classmethod</kbd> `SpacetimeDBClient.init`
+### <kbd>classmethod</kbd> `init`
 
 ```python
 init(
@@ -206,7 +283,7 @@ init(
     autogen_package: module,
     on_connect: Callable[[], NoneType] = None,
     on_disconnect: Callable[[str], NoneType] = None,
-    on_identity: Callable[[bytes], NoneType] = None,
+    on_identity: Callable[[str, Identity], NoneType] = None,
     on_error: Callable[[str], NoneType] = None
 )
 ```
@@ -233,14 +310,12 @@ Create a network manager instance.
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L282"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L328"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.register_on_event`
+### <kbd>method</kbd> `register_on_event`
 
 ```python
-register_on_event(
-    callback: Callable[[src.spacetimedb_sdk.spacetimedb_client.TransactionUpdateMessage], NoneType]
-)
+register_on_event(callback: Callable[[TransactionUpdateMessage], NoneType])
 ```
 
 Register a callback function to handle transaction update events. 
@@ -261,9 +336,9 @@ This function registers a callback function that will be called when a reducer m
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L246"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L292"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.register_on_subscription_applied`
+### <kbd>method</kbd> `register_on_subscription_applied`
 
 ```python
 register_on_subscription_applied(callback: Callable[[], NoneType])
@@ -286,9 +361,9 @@ SpacetimeDBClient.instance.register_on_subscription_applied(subscription_callbac
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L226"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L272"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.subscribe`
+### <kbd>method</kbd> `subscribe`
 
 ```python
 subscribe(queries: List[str])
@@ -311,14 +386,12 @@ This function sends a subscription request to the SpacetimeDB module, indicating
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L306"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L352"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.unregister_on_event`
+### <kbd>method</kbd> `unregister_on_event`
 
 ```python
-unregister_on_event(
-    callback: Callable[[src.spacetimedb_sdk.spacetimedb_client.TransactionUpdateMessage], NoneType]
-)
+unregister_on_event(callback: Callable[[TransactionUpdateMessage], NoneType])
 ```
 
 Unregister a callback function that was previously registered using `register_on_event`. 
@@ -336,9 +409,9 @@ Unregister a callback function that was previously registered using `register_on
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L265"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L311"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.unregister_on_subscription_applied`
+### <kbd>method</kbd> `unregister_on_subscription_applied`
 
 ```python
 unregister_on_subscription_applied(callback: Callable[[], NoneType])
@@ -361,9 +434,9 @@ SpacetimeDBClient.instance.register_on_subscription_applied(subscription_callbac
 
 ---
 
-<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L197"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="..\src\spacetimedb_sdk\spacetimedb_client.py#L243"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `SpacetimeDBClient.update`
+### <kbd>method</kbd> `update`
 
 ```python
 update()
