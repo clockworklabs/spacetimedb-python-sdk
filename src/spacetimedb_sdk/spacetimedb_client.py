@@ -47,7 +47,7 @@ class Identity:
 
     # override to_string
     def __str__(self):
-        return self.data.decode("utf-8")
+        return self.data.hex()
 
     # override = operator
     def __eq__(self, other):
@@ -235,7 +235,7 @@ class SpacetimeDBClient:
             on_close=on_disconnect,
             on_message=self._on_message,
         )
-        print("CONNECTING " + host + " " + address_or_name)
+        # print("CONNECTING " + host + " " + address_or_name)
         self.wsc.connect(
             auth_token,
             host,
