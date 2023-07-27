@@ -4,7 +4,7 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient, Identity
 from spacetimedb_sdk.spacetimedb_client import ReducerEvent
 
 class User:
@@ -25,16 +25,12 @@ class User:
 		return next(iter([column_value for column_value in SpacetimeDBClient.instance._get_table_cache("User").values() if column_value.identity == identity]), None)
 
 	@classmethod
-	def filter_by_name(cls, name) -> List[User]:
-		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("User").values() if column_value.name == name]
-
-	@classmethod
 	def filter_by_online(cls, online) -> List[User]:
 		return [column_value for column_value in SpacetimeDBClient.instance._get_table_cache("User").values() if column_value.online == online]
 
 	def __init__(self, data: List[object]):
 		self.data = {}
-		self.data["identity"] = bytes.fromhex(data[0])
+		self.data["identity"] = Identity.from_string(data[0])
 		self.data["name"] = str(data[1]['0']) if '0' in data[1] else None
 		self.data["online"] = bool(data[2])
 
