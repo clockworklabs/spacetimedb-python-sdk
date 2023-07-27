@@ -1,7 +1,3 @@
-import sys
-
-sys.path.insert(0,"../../../src")
-
 import asyncio
 from multiprocessing import Queue
 import threading
@@ -110,7 +106,7 @@ def input_loop():
         user_input = input()        
         if user_input.startswith("/name "):
             input_queue.put(("name", user_input[6:]))        
-        else:
+    else:
             input_queue.put(("message", user_input))
 
 
