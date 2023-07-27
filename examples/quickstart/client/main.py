@@ -1,7 +1,3 @@
-import sys
-
-sys.path.insert(0, "../../../src")
-
 import asyncio
 from multiprocessing import Queue
 import threading
@@ -24,7 +20,7 @@ def run_client(spacetime_client):
         spacetime_client.run(
             local_config.get_string("auth_token"),
             "localhost:3000",
-            "chat3",
+            "chat",
             False,
             on_connect,
             ["SELECT * FROM User", "SELECT * FROM Message"],
@@ -39,7 +35,7 @@ def input_loop():
         user_input = input()
         if len(user_input) == 0:
             return
-        if user_input.startswith("/name "):
+        elif user_input.startswith("/name "):
             input_queue.put(("name", user_input[6:]))
         else:
             input_queue.put(("message", user_input))
