@@ -298,6 +298,7 @@ class SpacetimeDBAsyncClient:
         await asyncio.sleep(timeout)
         self.event_queue.put_nowait(("timeout",))
 
+    # TODO: Replace this with a proper async queue
     async def _event(self):
         update_task = asyncio.create_task(self._periodic_update())
         try:

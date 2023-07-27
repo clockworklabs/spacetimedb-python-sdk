@@ -53,6 +53,9 @@ class Identity:
     def __eq__(self, other):
         return isinstance(other, Identity) and self.data == other.data
 
+    def __hash__(self):
+        return hash(self.data)
+
 
 class DbEvent:
     """
