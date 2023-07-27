@@ -1,3 +1,7 @@
+import sys
+
+sys.path.insert(0,"../../../src")
+
 import asyncio
 from multiprocessing import Queue
 import threading
@@ -63,19 +67,6 @@ def on_send_message_reducer(sender, status, message, msg):
         if status == "failed":
             print(f"Failed to send message: {message}")
 
-
-def print_menu():
-    print("1. Read messages")
-    print("2. Send a message")
-    print("3. Set name")
-    print("4. Quit")
-
-
-def on_subscription_applied():
-    print(f"\nSYSTEM: Connected.")
-    print_menu()
-
-
 def print_messages_in_order():
     all_messages = sorted(Message.iter(), key=lambda x: x.sent)
     for entry in all_messages:
@@ -83,23 +74,19 @@ def print_messages_in_order():
             f"{user_name_or_identity(User.filter_by_identity(entry.sender))}: {entry.text}"
         )
 
+def on_subscription_applied():
+    print(f"\nSYSTEM: Connected.")
+    print_messages_in_order()
 
 def check_commands():
     global input_queue
 
     if not input_queue.empty():
         choice = input_queue.get()
-        if choice[0] == "1":
-            print("\nSender: Message")
-            print_messages_in_order()
-            print("\n")
-            print_menu()
-        elif choice[0] == "2":
+        if choice[0] == "name":
+            set_name_reducer.set_name(choice[1])            
+        else:
             send_message_reducer.send_message(choice[1])
-            print_menu()
-        elif choice[0] == "3":
-            set_name_reducer.set_name(choice[1])
-            print_menu()
 
     spacetime_client.schedule_event(0.1, check_commands)
 
@@ -120,19 +107,11 @@ def input_loop():
     global input_queue
 
     while True:
-        choice = input()
-        if choice == "1":
-            input_queue.put((choice, None))
-        elif choice == "2":
-            message = input("Enter message: ")
-            input_queue.put((choice, message))
-        elif choice == "3":
-            name = input("Enter name: ")
-            input_queue.put((choice, name))
-        elif choice == "4":
-            break
+        user_input = input()        
+        if user_input.startswith("/name "):
+            input_queue.put(("name", user_input[6:]))        
         else:
-            print("Invalid choice")
+            input_queue.put(("message", user_input))
 
 
 def on_connect(auth_token, identity):
@@ -147,7 +126,7 @@ def run_client(spacetime_client):
         spacetime_client.run(
             local_config.get_string("auth_token"),
             "localhost:3000",
-            "chat",
+            "chat2",
             False,
             on_connect,
             ["SELECT * FROM User", "SELECT * FROM Message"],
