@@ -30,7 +30,7 @@ class User:
 
 	def __init__(self, data: List[object]):
 		self.data = {}
-		self.data["identity"] = Identity.from_string(data[0])
+		self.data["identity"] = Identity.from_string(data[0][0])
 		self.data["name"] = str(data[1]['0']) if '0' in data[1] else None
 		self.data["online"] = bool(data[2])
 

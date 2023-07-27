@@ -32,7 +32,7 @@ class Message:
 
 	def __init__(self, data: List[object]):
 		self.data = {}
-		self.data["sender"] = Identity.from_string(data[0])
+		self.data["sender"] = Identity.from_string(data[0][0])
 		self.data["sent"] = int(data[1])
 		self.data["text"] = str(data[2])
 
