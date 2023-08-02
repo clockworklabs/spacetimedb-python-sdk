@@ -5,11 +5,11 @@ import threading
 from spacetimedb_sdk.spacetimedb_async_client import SpacetimeDBAsyncClient
 import spacetimedb_sdk.local_config as local_config
 
-import spacetime_types
-from spacetime_types.user import User
-from spacetime_types.message import Message
-import spacetime_types.send_message_reducer as send_message_reducer
-import spacetime_types.set_name_reducer as set_name_reducer
+import module_bindings
+from module_bindings.user import User
+from module_bindings.message import Message
+import module_bindings.send_message_reducer as send_message_reducer
+import module_bindings.set_name_reducer as set_name_reducer
 
 input_queue = Queue()
 local_identity = None
@@ -124,7 +124,7 @@ def on_user_row_update(row_op, user_old, user, reducer_event):
 
 
 def register_callbacks(spacetime_client):
-    spacetime_client.client.register_on_subscription_applied(on_subscription_applied)
+    spacetime_client.register_on_subscription_applied(on_subscription_applied)
 
     User.register_row_update(on_user_row_update)
     Message.register_row_update(on_message_row_update)
@@ -138,7 +138,7 @@ def register_callbacks(spacetime_client):
 if __name__ == "__main__":
     local_config.init(".spacetimedb-python-quickstart")
 
-    spacetime_client = SpacetimeDBAsyncClient(spacetime_types)
+    spacetime_client = SpacetimeDBAsyncClient(module_bindings)
 
     register_callbacks(spacetime_client)
 
