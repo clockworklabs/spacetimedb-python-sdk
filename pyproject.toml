@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "spacetimedb_sdk"
 authors = [
-    {name = "Derek Brinkmann", email = "derek@clockworklabs.io"},
+    {name = "Clockwork Labs", email = "derek@clockworklabs.io"},
 ]
 
 dependencies = [
     "websocket-client",
     "configparser",
 ]
-version = "0.5.0.2"
+version = "0.6.0"
 readme = "README.md"
 
 # urls
