@@ -133,9 +133,8 @@ class SpacetimeDBAsyncClient:
     async def run(
         self,
         auth_token,
-        host,
+        spacetimedb_uri,
         address_or_name,
-        ssl_enabled,
         on_connect,
         subscription_queries=[],
     ):
@@ -144,7 +143,7 @@ class SpacetimeDBAsyncClient:
 
         Args:
             auth_token : authentication token to use when connecting to the server
-            host : host name or IP address of the server
+            spacetimedb_uri : URI of the SpacetimeDB server (ex: https://testnet.spacetimedb.com)
             address_or_name : address or name of the module to connect to
             ssl_enabled : True to use SSL, False to not use SSL
             on_connect : function to call when the client connects to the server
@@ -155,7 +154,7 @@ class SpacetimeDBAsyncClient:
             self._on_async_loop_start()
 
         identity_result = await self.connect(
-            auth_token, host, address_or_name, ssl_enabled, subscription_queries
+            auth_token, spacetimedb_uri, address_or_name, subscription_queries
         )
 
         if on_connect is not None:
@@ -185,7 +184,11 @@ class SpacetimeDBAsyncClient:
         await self.close()
 
     async def connect(
-        self, auth_token, host, address_or_name, ssl_enabled, subscription_queries=[]
+        self,
+        auth_token,
+        spacetimedb_uri,
+        address_or_name,
+        subscription_queries=[],
     ):
         """
         Connect to the server.
@@ -194,7 +197,7 @@ class SpacetimeDBAsyncClient:
 
         Args:
             auth_token : authentication token to use when connecting to the server
-            host : host name or IP address of the server
+            spacetimedb_uri : URI of the SpacetimeDB server (ex: https://testnet.spacetimedb.com)
             address_or_name : address or name of the module to connect to
             ssl_enabled : True to use SSL, False to not use SSL
             subscription_queries : list of queries to subscribe to
@@ -219,9 +222,8 @@ class SpacetimeDBAsyncClient:
 
         self.client.connect(
             auth_token,
-            host,
+            spacetimedb_uri,
             address_or_name,
-            ssl_enabled,
             on_connect=None,
             on_error=on_error,
             on_disconnect=on_disconnect,

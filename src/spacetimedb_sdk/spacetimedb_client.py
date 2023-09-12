@@ -215,9 +215,8 @@ class SpacetimeDBClient:
     def connect(
         self,
         auth_token,
-        host,
+        spacetimedb_uri,
         address_or_name,
-        ssl_enabled,
         on_connect,
         on_disconnect,
         on_identity,
@@ -238,9 +237,8 @@ class SpacetimeDBClient:
         # print("CONNECTING " + host + " " + address_or_name)
         self.wsc.connect(
             auth_token,
-            host,
+            spacetimedb_uri,
             address_or_name,
-            ssl_enabled,
         )
 
     def update(self):
@@ -592,8 +590,8 @@ class SpacetimeDBClient:
                         decode_func = self.client_cache.reducer_cache[
                             reducer_event.reducer_name
                         ]
-                        if reducer_event.status == "committed":
-                            args = decode_func(reducer_event.args)
+
+                        args = decode_func(reducer_event.args)
 
                         for reducer_callback in self._reducer_callbacks[
                             reducer_event.reducer_name
