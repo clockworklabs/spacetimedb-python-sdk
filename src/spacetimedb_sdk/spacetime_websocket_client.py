@@ -29,6 +29,9 @@ class WebSocketClient:
         elif spacetimedb_uri[:4] == "http":
             spacetimedb_uri = "ws" + spacetimedb_uri[4:]
 
+        if spacetimedb_uri[:5] != "ws://" and spacetimedb_uri[:6] != "wss://":
+            spacetimedb_uri = "ws://" + spacetimedb_uri
+
         url = f"{spacetimedb_uri}/database/subscribe/{name_or_address}"
 
         self.spacetimedb_uri = spacetimedb_uri
