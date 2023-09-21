@@ -110,6 +110,10 @@ class _SubscriptionUpdateMessage(_ClientApiMessage):
 
 
 class ReducerEvent:
+    """
+    This class contains the information about a reducer event to be passed to row update callbacks.
+    """
+
     def __init__(self, caller_identity, reducer_name, status, message, args):
         self.caller_identity = caller_identity
         self.reducer_name = reducer_name
