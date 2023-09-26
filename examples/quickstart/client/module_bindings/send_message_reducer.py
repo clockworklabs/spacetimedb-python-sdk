@@ -5,13 +5,16 @@ from typing import List, Callable
 
 from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient
 from spacetimedb_sdk.spacetimedb_client import Identity
+from spacetimedb_sdk.spacetimedb_client import Address
 
+
+reducer_name = "send_message"
 
 def send_message(text: str):
 	text = text
 	SpacetimeDBClient.instance._reducer_call("send_message", text)
 
-def register_on_send_message(callback: Callable[[Identity, str, str, str], None]):
+def register_on_send_message(callback: Callable[[Identity, Address, str, str, str], None]):
 	SpacetimeDBClient.instance._register_reducer("send_message", callback)
 
 def _decode_args(data):
