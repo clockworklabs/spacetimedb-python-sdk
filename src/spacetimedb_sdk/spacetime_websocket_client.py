@@ -5,7 +5,7 @@ import binascii
 
 
 class WebSocketClient:
-    def __init__(self, protocol, on_connect=None, on_close=None, on_error=None, on_message=None):
+    def __init__(self, protocol, on_connect=None, on_close=None, on_error=None, on_message=None, client_address=None):
         self._on_connect = on_connect
         self._on_close = on_close
         self._on_error = on_error
@@ -17,10 +17,14 @@ class WebSocketClient:
         self.host = None
         self.name_or_address = None
         self.is_connected = False
+        self.client_address = client_address
 
     def connect(self, auth, host, name_or_address, ssl_enabled):
         protocol = "wss" if ssl_enabled else "ws"
         url = f"{protocol}://{host}/database/subscribe/{name_or_address}"
+
+        if self.client_address is not None:
+            url += f"?client_address={self.client_address}"
 
         self.host = host
         self.name_or_address = name_or_address

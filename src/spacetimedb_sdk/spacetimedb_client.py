@@ -3,6 +3,7 @@ from types import ModuleType
 
 import json
 import queue
+import random
 
 from spacetimedb_sdk.spacetime_websocket_client import WebSocketClient
 from spacetimedb_sdk.client_cache import ClientCache
@@ -56,6 +57,69 @@ class Identity:
     def __hash__(self):
         return hash(self.data)
 
+class Address:
+    """
+    Represents a user address. This is a wrapper around the Uint8Array that is recieved from SpacetimeDB.
+
+    Attributes:
+        data (bytes): The address data.
+    """
+
+    def __init__(self, data):
+        self.data = bytes(data)  # Ensure data is always bytes
+
+    @staticmethod
+    def from_string(string):
+        """
+        Returns an Address object with the data attribute set to the byte representation of the input string.
+        Returns None if the string is all zeros.
+
+        Args:
+            string (str): The input string.
+
+        Returns:
+            Address: The Address object.
+        """
+        address_bytes = bytes.fromhex(string)
+        if all(byte == 0 for byte in address_bytes):
+            return None
+        else:
+            return Address(address_bytes)
+
+    @staticmethod
+    def from_bytes(data):
+        """
+        Returns an Address object with the data attribute set to the input bytes.
+
+        Args:
+            data (bytes): The input bytes.
+
+        Returns:
+            Address: The Address object.
+        """
+        if all(byte == 0 for byte in address_bytes):
+            return None
+        else:
+            return Address(data)
+
+    @staticmethod
+    def random():
+        """
+        Returns a random Address.
+        """
+        return Address(bytes(random.getrandbits(8) for _ in range(16)))
+
+    # override to_string
+    def __str__(self):
+        return self.data.hex()
+
+    # override = operator
+    def __eq__(self, other):
+        return isinstance(other, Address) and self.data == other.data
+
+    def __hash__(self):
+        return hash(self.data)
+
 
 class DbEvent:
     """
@@ -93,11 +157,12 @@ class _IdentityReceivedMessage(_ClientApiMessage):
     This class is intended for internal use only and should not be used externally.
     """
 
-    def __init__(self, auth_token, identity):
+    def __init__(self, auth_token, identity, address):
         super().__init__("IdentityReceived")
 
         self.auth_token = auth_token
         self.identity = identity
+        self.address = address
 
 
 class _SubscriptionUpdateMessage(_ClientApiMessage):
@@ -114,8 +179,9 @@ class ReducerEvent:
     This class contains the information about a reducer event to be passed to row update callbacks.
     """
 
-    def __init__(self, caller_identity, reducer_name, status, message, args):
+    def __init__(self, caller_identity, caller_address, reducer_name, status, message, args):
         self.caller_identity = caller_identity
+        self.caller_address = caller_address
         self.reducer_name = reducer_name
         self.status = status
         self.message = message
@@ -123,6 +189,7 @@ class ReducerEvent:
 
 
 class TransactionUpdateMessage(_ClientApiMessage):
+    # This docstring appears incorrect
     """
     Represents a transaction update message. Used in on_event callbacks.
 
@@ -140,6 +207,7 @@ class TransactionUpdateMessage(_ClientApiMessage):
     def __init__(
         self,
         caller_identity: Identity,
+        caller_address: Address,
         status: str,
         message: str,
         reducer_name: str,
@@ -147,7 +215,7 @@ class TransactionUpdateMessage(_ClientApiMessage):
     ):
         super().__init__("TransactionUpdate")
         self.reducer_event = ReducerEvent(
-            caller_identity, reducer_name, status, message, args
+            caller_identity, caller_address, reducer_name, status, message, args
         )
 
 
@@ -169,7 +237,7 @@ class SpacetimeDBClient:
         autogen_package: ModuleType,
         on_connect: Callable[[], None] = None,
         on_disconnect: Callable[[str], None] = None,
-        on_identity: Callable[[str, Identity], None] = None,
+        on_identity: Callable[[str, Identity, Address], None] = None,
         on_error: Callable[[str], None] = None,
     ):
         """
@@ -182,7 +250,7 @@ class SpacetimeDBClient:
             autogen_package (ModuleType): Python package where SpacetimeDB module generated files are located.
             on_connect (Callable[[], None], optional): Optional callback called when a connection is made to the SpacetimeDB module.
             on_disconnect (Callable[[str], None], optional): Optional callback called when the Python client is disconnected from the SpacetimeDB module. The argument is the close message.
-            on_identity (Callable[[str, bytes], None], optional): Called when the user identity is recieved from SpacetimeDB. First argument is the auth token used to login in future sessions.
+            on_identity (Callable[[str, Identity, Address], None], optional): Called when the user identity is recieved from SpacetimeDB. First argument is the auth token used to login in future sessions.
             on_error (Callable[[str], None], optional): Optional callback called when the Python client connection encounters an error. The argument is the error message.
 
         Example:
@@ -210,6 +278,7 @@ class SpacetimeDBClient:
         self._on_event = []
 
         self.identity = None
+        self.address = Address.random()
 
         self.client_cache = ClientCache(autogen_package)
         self.message_queue = queue.Queue()
@@ -238,6 +307,7 @@ class SpacetimeDBClient:
             on_error=on_error,
             on_close=on_disconnect,
             on_message=self._on_message,
+            client_address=self.address,
         )
         # print("CONNECTING " + host + " " + address_or_name)
         self.wsc.connect(
@@ -420,7 +490,8 @@ class SpacetimeDBClient:
             # is this safe to do in the message thread?
             token = message["IdentityToken"]["token"]
             identity = Identity.from_string(message["IdentityToken"]["identity"])
-            self.message_queue.put(_IdentityReceivedMessage(token, identity))
+            address = Address.from_string(message["IdentityToken"]["address"])
+            self.message_queue.put(_IdentityReceivedMessage(token, identity, address))
         elif "SubscriptionUpdate" in message or "TransactionUpdate" in message:
             clientapi_message = None
             table_updates = None
@@ -432,6 +503,7 @@ class SpacetimeDBClient:
                 # DAB Todo: We need reducer codegen to parse the args
                 clientapi_message = TransactionUpdateMessage(
                     Identity.from_string(spacetime_message["event"]["caller_identity"]),
+                    Address.from_string(spacetime_message["event"]["caller_address"]),
                     spacetime_message["event"]["status"],
                     spacetime_message["event"]["message"],
                     spacetime_message["event"]["function_call"]["reducer"],
@@ -473,8 +545,9 @@ class SpacetimeDBClient:
 
             if next_message.transaction_type == "IdentityReceived":
                 self.identity = next_message.identity
+                self.address = next_message.address
                 if self._on_identity:
-                    self._on_identity(next_message.auth_token, self.identity)
+                    self._on_identity(next_message.auth_token, self.identity, self.address)
             else:
                 # print(f"next_message: {next_message.transaction_type}")
                 # apply all the event state before calling callbacks
@@ -596,14 +669,15 @@ class SpacetimeDBClient:
                         decode_func = self.client_cache.reducer_cache[
                             reducer_event.reducer_name
                         ]
-                        if reducer_event.status == "committed":
-                            args = decode_func(reducer_event.args)
+
+                        args = decode_func(reducer_event.args)
 
                         for reducer_callback in self._reducer_callbacks[
                             reducer_event.reducer_name
                         ]:
                             reducer_callback(
                                 reducer_event.caller_identity,
+                                reducer_event.caller_address,
                                 reducer_event.status,
                                 reducer_event.message,
                                 *args,
