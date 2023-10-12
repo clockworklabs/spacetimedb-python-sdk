@@ -74,14 +74,14 @@ def on_subscription_applied():
     print_messages_in_order()
 
 
-def on_send_message_reducer(sender, status, message, msg):
-    if sender == local_identity:
+def on_send_message_reducer(sender_id, sender_address, status, message, msg):
+    if sender_id == local_identity:
         if status == "failed":
             print(f"Failed to send message: {message}")
 
 
-def on_set_name_reducer(sender, status, message, name):
-    if sender == local_identity:
+def on_set_name_reducer(sender_id, sender_address, status, message, name):
+    if sender_id == local_identity:
         if status == "failed":
             print(f"Failed to set name: {message}")
 

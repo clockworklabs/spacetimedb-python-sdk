@@ -4,7 +4,7 @@
 from __future__ import annotations
 from typing import List, Iterator, Callable
 
-from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient, Identity
+from spacetimedb_sdk.spacetimedb_client import SpacetimeDBClient, Identity, Address
 from spacetimedb_sdk.spacetimedb_client import ReducerEvent
 
 class Message:

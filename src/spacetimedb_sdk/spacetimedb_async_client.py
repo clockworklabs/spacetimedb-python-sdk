@@ -212,8 +212,9 @@ class SpacetimeDBAsyncClient:
             else:
                 self.event_queue.put_nowait(("error", SpacetimeDBException(close_msg)))
 
-        def on_identity_received(auth_token, identity):
+        def on_identity_received(auth_token, identity, address):
             self.identity = identity
+            self.address = address
             self.client.subscribe(subscription_queries)
             self.event_queue.put_nowait(("connected", (auth_token, identity)))
 
