@@ -669,9 +669,9 @@ class SpacetimeDBClient:
                         decode_func = self.client_cache.reducer_cache[
                             reducer_event.reducer_name
                         ]
-                        if reducer_event.status == "committed":
-                            args = decode_func(reducer_event.args)
-                        
+
+                        args = decode_func(reducer_event.args)
+
                         for reducer_callback in self._reducer_callbacks[
                             reducer_event.reducer_name
                         ]:
