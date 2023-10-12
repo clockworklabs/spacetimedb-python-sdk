@@ -19,9 +19,8 @@ def run_client(spacetime_client):
     asyncio.run(
         spacetime_client.run(
             local_config.get_string("auth_token"),
-            "localhost:3000",
-            "chat",
-            False,
+            "http://localhost:3000",
+            "chatqs",
             on_connect,
             ["SELECT * FROM User", "SELECT * FROM Message"],
         )

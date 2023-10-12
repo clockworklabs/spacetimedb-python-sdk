@@ -5,7 +5,9 @@ import binascii
 
 
 class WebSocketClient:
-    def __init__(self, protocol, on_connect=None, on_close=None, on_error=None, on_message=None):
+    def __init__(
+        self, protocol, on_connect=None, on_close=None, on_error=None, on_message=None
+    ):
         self._on_connect = on_connect
         self._on_close = on_close
         self._on_error = on_error
@@ -14,15 +16,25 @@ class WebSocketClient:
         self.protocol = protocol
         self.ws = None
         self.message_thread = None
-        self.host = None
+        self.spacetimedb_uri = None
         self.name_or_address = None
         self.is_connected = False
 
-    def connect(self, auth, host, name_or_address, ssl_enabled):
-        protocol = "wss" if ssl_enabled else "ws"
-        url = f"{protocol}://{host}/database/subscribe/{name_or_address}"
+    def connect(self, auth, spacetimedb_uri, name_or_address):
+        if spacetimedb_uri[-1] == "/":
+            spacetimedb_uri = spacetimedb_uri[:-1]
 
-        self.host = host
+        if spacetimedb_uri[:5] == "https":
+            spacetimedb_uri = "wss" + spacetimedb_uri[5:]
+        elif spacetimedb_uri[:4] == "http":
+            spacetimedb_uri = "ws" + spacetimedb_uri[4:]
+
+        if spacetimedb_uri[:5] != "ws://" and spacetimedb_uri[:6] != "wss://":
+            spacetimedb_uri = "ws://" + spacetimedb_uri
+
+        url = f"{spacetimedb_uri}/database/subscribe/{name_or_address}"
+
+        self.spacetimedb_uri = spacetimedb_uri
         self.name_or_address = name_or_address
 
         ws_header = None
@@ -35,13 +47,15 @@ class WebSocketClient:
         else:
             headers = None
 
-        self.ws = websocket.WebSocketApp(url,
-                                         on_open=self.on_open,
-                                         on_message=self.on_message,
-                                         on_error=self.on_error,
-                                         on_close=self.on_close, 
-                                         header=headers, 
-                                         subprotocols=[self.protocol])
+        self.ws = websocket.WebSocketApp(
+            url,
+            on_open=self.on_open,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close,
+            header=headers,
+            subprotocols=[self.protocol],
+        )
 
         self.message_thread = threading.Thread(target=self.ws.run_forever)
         self.message_thread.start()
