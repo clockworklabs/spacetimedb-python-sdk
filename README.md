@@ -1,8 +1,8 @@
 # Notice: Seeking Maintainers
 
-Due to resource constraints, we are not actively maintaining the SpacetimeDB Python SDK at this time.
+Due to resource constraints, we are not actively maintaining the SpacetimeDB Python SDK at this time. Official Python SDK support will return in the future when Python modules are also supported.
 
-We believe in the importance of open-source collaboration and want to ensure that SpacetimeDB continues to thrive. Therefore, we are seeking individuals or organizations who are interested in taking over the maintenance and development of the Python SDK.
+For now, help wanted! We believe in the importance of open-source collaboration and want to ensure that SpacetimeDB continues to thrive. Therefore, we are seeking individuals or organizations who are interested in taking over the maintenance and development of the Python SDK.
 
 If you are passionate about SpacetimeDB and have the time and expertise to contribute, we welcome you to step forward and become a maintainer. Your contributions will be highly valued by the community and will help ensure the longevity and sustainability of this project.
 
