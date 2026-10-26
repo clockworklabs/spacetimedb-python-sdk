@@ -17,6 +17,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v7
       with:
+        # Use a supported Python release for publishing.
         python-version: '3.13'
     - name: Install dependencies
       run: |
@@ -26,6 +27,7 @@ jobs:
     - name: Build package
       run: python -m build
     - name: Publish package
+      # Publish in this patched environment; the old action used a separate Python container.
       run: python -m twine upload dist/*
       env:
         TWINE_USERNAME: __token__
