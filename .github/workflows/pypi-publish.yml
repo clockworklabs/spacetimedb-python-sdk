@@ -20,6 +20,7 @@ jobs:
         python-version: '3.13'
     - name: Install dependencies
       run: |
+        # These minimums remove the compromised emSign CA from pip's and certifi's bundled roots.
         python -m pip install --upgrade 'pip>=26.2.2'
         python -m pip install build twine 'certifi>=2026.10.19'
     - name: Build package
