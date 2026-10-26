@@ -27,7 +27,7 @@ jobs:
     - name: Build package
       run: python -m build
     - name: Publish package
-      # Publish in this patched environment; the old action used a separate Python container.
+      # Run uploads in the job's Python environment so pip and certifi security minimums apply.
       run: python -m twine upload dist/*
       env:
         TWINE_USERNAME: __token__
